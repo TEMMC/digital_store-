@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Digital Store</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            background: #f4f4f4;
+        }
+
+        .nav {
+            background: #111;
+            padding: 15px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .nav a {
+            color: white;
+            margin-left: 10px;
+            text-decoration: none;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        button, a.btn {
+            padding: 8px 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .free {
+            color: green;
+            font-weight: bold;
+        }
+
+        .price {
+            color: #333;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="nav">
+    <div><b>Digital Store</b></div>
+    <div>
+        <a href="/">Home</a>
+        <a href="/add">Add</a>
+        <a href="/dashboard">Dashboard</a>
+    </div>
+</div>
+
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

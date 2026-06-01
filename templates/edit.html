@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head><title>Edit Product</title></head>
+<body>
+
+<h2>Edit Product</h2>
+
+<form method="POST">
+
+<input name="name" value="{{ product.name }}"><br><br>
+
+<textarea name="description">{{ product.description }}</textarea><br><br>
+
+<input name="price" value="{{ product.price }}"><br><br>
+
+<label>
+<input type="checkbox" name="is_free" {% if product.is_free %}checked{% endif %}>
+FREE
+</label><br><br>
+
+<button type="submit">Save</button>
+
+</form>
+
+</body>
+</html>

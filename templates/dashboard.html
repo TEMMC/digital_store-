@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Seller Dashboard</h2>
+
+{% for p in products %}
+<div class="card">
+
+    <h3>{{ p.name }}</h3>
+
+    <p>
+        {% if p.is_free %}
+            FREE
+        {% else %}
+            ${{ p.price }}
+        {% endif %}
+    </p>
+
+    <p>Downloads: {{ p.downloads }}</p>
+
+    <a class="btn" href="/edit/{{ p.id }}">Edit</a>
+    <a class="btn" href="/delete/{{ p.id }}">Delete</a>
+
+</div>
+{% endfor %}
+
+{% endblock %}

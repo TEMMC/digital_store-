@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Add Product</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #0b1220;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.box {
+    background: #1e293b;
+    padding: 25px;
+    border-radius: 12px;
+    width: 350px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: none;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background: #38bdf8;
+    border: none;
+    color: black;
+    font-weight: bold;
+    border-radius: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Add Product</h2>
+
+<form method="POST" enctype="multipart/form-data">
+
+  <input name="name" placeholder="Product name" required>
+
+  <textarea name="description" placeholder="Description"></textarea>
+
+  <input name="price" type="number" step="0.01" placeholder="Price">
+
+  <select name="category" required>
+    <option value="">Select Category</option>
+    <option value="Apps">Apps</option>
+    <option value="Games">Games</option>
+    <option value="Documents">Documents</option>
+    <option value="Music">Music</option>
+    <option value="Videos">Videos</option>
+  </select>
+
+  <label>📦 Product File</label>
+  <input type="file" name="file">
+
+  <label>🖼️ Product Image</label>
+  <input type="file" name="image">
+
+  <label>
+    <input type="checkbox" name="is_free"> Free Product
+  </label>
+
+  <button type="submit">Upload Product</button>
+
+</form>
+
+</div>
+
+</body>
+</html>

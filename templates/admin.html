@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Admin Panel</h2>
+
+{% for p in products %}
+<div class="card">
+
+<h3>{{ p.name }}</h3>
+<p>Status: {{ "Approved" if p.approved else "Pending" }}</p>
+
+{% if not p.approved %}
+<a class="btn" href="/approve/{{ p.id }}">Approve</a>
+{% endif %}
+
+</div>
+{% endfor %}
+
+{% endblock %}

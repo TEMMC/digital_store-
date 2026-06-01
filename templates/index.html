@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Digital Store</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b1220;
+    color: white;
+}
+
+header {
+    background: #111a2e;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+a {
+    color: #38bdf8;
+    text-decoration: none;
+}
+
+.container {
+    padding: 20px;
+}
+
+.search-box input {
+    padding: 10px;
+    width: 200px;
+    border-radius: 8px;
+    border: none;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.card {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 12px;
+    transition: 0.2s;
+}
+
+.card:hover {
+    transform: scale(1.02);
+}
+
+.card img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.badge {
+    background: #38bdf8;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+button {
+    padding: 10px;
+    width: 100%;
+    margin-top: 10px;
+    border: none;
+    background: #22c55e;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #16a34a;
+}
+
+button:disabled {
+    background: gray;
+    cursor: not-allowed;
+}
+
+.topbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.support-box {
+    margin-top: 40px;
+    background: #111a2e;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.support-box h3 {
+    color: #38bdf8;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+    background: #111a2e;
+    color: #94a3b8;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div><b>Digital Store</b></div>
+
+    <div class="topbar">
+        <form method="GET" action="/" class="search-box">
+            <input name="search" placeholder="Search products...">
+        </form>
+
+        {% if session.get('user') %}
+            <span>👤 {{ session['user'] }}</span>
+            <a href="/logout">Logout</a>
+        {% else %}
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+        {% endif %}
+
+        {% if session.get('role') == 'seller' %}
+            <a href="/add">+ Sell</a>
+        {% endif %}
+    </div>
+</header>
+
+<div class="container">
+
+    <h2>🔥 Products</h2>
+
+    <div class="product-grid">
+
+        {% for p in products %}
+        <div class="card">
+
+            {% if p.image_path %}
+                <img src="{{ p.image_path }}" alt="product image">
+            {% endif %}
+
+            <h3>{{ p.name }}</h3>
+            <p>{{ p.description }}</p>
+
+            <p><b>Category:</b> <span class="badge">{{ p.category }}</span></p>
+
+            <p>
+                {% if p.is_free %}
+                    <b style="color:#22c55e">FREE</b>
+                {% else %}
+                    <b>${{ p.price }}</b>
+                {% endif %}
+            </p>
+
+            {% if p.is_free %}
+                <a href="/download/{{ p.id }}">
+                    <button>⬇ Download</button>
+                </a>
+            {% else %}
+                <button disabled>Paid (Coming soon)</button>
+            {% endif %}
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <!-- CUSTOMER CARE -->
+    <div class="support-box">
+        <h3>📞 Customer Care</h3>
+        <p>If you have issues downloading or uploading products:</p>
+
+        <p>📧 Email: 
+            <a href="mailto:customercaremetmcmarketplace@gmail.com">
+                customercaremetmcmarketplace@gmail.com
+            </a>
+        </p>
+
+        <p>💬 WhatsApp: +263 777961678</p>
+        <p>⏰ Available: 24/7</p>
+    </div>
+
+</div>
+
+<footer>
+    Built with ❤️ by <b>Tinotenda Enock Mapfumo</b>
+</footer>
+
+</body>
+</html>

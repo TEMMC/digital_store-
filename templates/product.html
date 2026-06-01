@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+
+<h2>{{ product.name }}</h2>
+
+{% if product.image %}
+<img src="{{ url_for('static', filename='products/' + product.image) }}" width="200">
+{% endif %}
+
+<p>{{ product.description }}</p>
+
+<p>
+{% if product.is_free %}
+<span class="free">FREE</span>
+{% else %}
+<span class="price">${{ product.price }}</span>
+{% endif %}
+</p>
+
+<p>Downloads: {{ product.downloads }}</p>
+
+<a class="btn" href="/download/{{ product.id }}">Download Now</a>
+
+</div>
+
+{% endblock %}
