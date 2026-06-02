@@ -15,11 +15,13 @@ body {
     height: 100vh;
 }
 
-.box {
-    background: #1e293b;
-    padding: 25px;
-    border-radius: 12px;
-    width: 350px;
+.box{
+    background:#1e293b;
+    padding:25px;
+    border-radius:12px;
+    width:500px;
+    max-height:90vh;
+    overflow-y:auto;
 }
 
 input, select, textarea {
@@ -58,11 +60,24 @@ button {
 
   <select name="category" required>
     <option value="">Select Category</option>
+
     <option value="Apps">Apps</option>
     <option value="Games">Games</option>
     <option value="Documents">Documents</option>
     <option value="Music">Music</option>
     <option value="Videos">Videos</option>
+
+    <option value="AI Tools">AI Tools</option>
+    <option value="Software">Software</option>
+    <option value="Ebooks">Ebooks</option>
+    <option value="Courses">Courses</option>
+    <option value="Templates">Templates</option>
+    <option value="Scripts">Scripts</option>
+    <option value="Bots">Bots</option>
+    <option value="Graphics">Graphics</option>
+    <option value="Themes">Themes</option>
+    <option value="Plugins">Plugins</option>
+    <option value="Source Code">Source Code</option>
   </select>
 
   <label>📦 Product File</label>
@@ -76,6 +91,67 @@ button {
   </label>
 
   <button type="submit">Upload Product</button>
+
+  <hr>
+
+  <label>🏷️ Tags</label>
+  <input type="text" name="tags" placeholder="python, ai, flask">
+
+  <label>⭐ Product Version</label>
+  <input type="text" name="version" placeholder="v1.0">
+
+  <label>🔗 Demo Link</label>
+  <input type="url" name="demo_link" placeholder="https://">
+
+  <label>📱 Platform</label>
+  <select name="platform">
+      <option>Android</option>
+      <option>Windows</option>
+      <option>Linux</option>
+      <option>Web</option>
+      <option>Cross Platform</option>
+  </select>
+
+  <label>📂 Sub Category</label>
+  <select name="subcategory">
+      <option>Software</option>
+      <option>Templates</option>
+      <option>Ebooks</option>
+      <option>Courses</option>
+      <option>Scripts</option>
+      <option>Bots</option>
+  </select>
+
+  <label>🎨 Featured Product</label>
+  <input type="checkbox" name="featured">
+
+  <label>📸 More Screenshots</label>
+  <input type="file" name="screenshots" multiple>
+
+  <label>📦 Product Size</label>
+  <input type="text" name="size" placeholder="15 MB">
+
+  <label>🔑 License Type</label>
+  <select name="license">
+      <option>Personal</option>
+      <option>Commercial</option>
+      <option>Open Source</option>
+  </select>
+
+  <label>📞 Seller Contact</label>
+  <input type="text" name="contact">
+
+  <label>🌐 Website</label>
+  <input type="url" name="website">
+
+  <label>📹 Product Video</label>
+  <input type="url" name="video">
+
+  <label>🚀 New Release</label>
+  <input type="checkbox" name="new_release">
+
+  <label>🔥 Trending</label>
+  <input type="checkbox" name="trending">
 
 </form>
 
