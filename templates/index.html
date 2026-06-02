@@ -12,6 +12,7 @@ body {
     color: white;
 }
 
+/* HEADER */
 header {
     background: #111a2e;
     padding: 15px;
@@ -25,10 +26,15 @@ a {
     text-decoration: none;
 }
 
-.container {
-    padding: 20px;
+/* TOP BAR */
+.topbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
+/* SEARCH */
 .search-box input {
     padding: 10px;
     width: 200px;
@@ -36,6 +42,34 @@ a {
     border: none;
 }
 
+/* CATEGORY BAR */
+.category-bar {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.category-bar a {
+    padding: 6px 12px;
+    background: #1e293b;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: 0.2s;
+}
+
+.category-bar a:hover {
+    background: #38bdf8;
+    color: black;
+}
+
+/* PAGE WRAPPER */
+.container {
+    padding: 20px;
+}
+<style>
+
+/* PRODUCT GRID */
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -43,22 +77,31 @@ a {
     margin-top: 20px;
 }
 
+/* PRODUCT CARD */
 .card {
     background: #1e293b;
     padding: 15px;
     border-radius: 12px;
     transition: 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .card:hover {
     transform: scale(1.02);
 }
 
+/* IMAGE FIX (Render-safe) */
 .card img {
     width: 100%;
+    height: 150px;
+    object-fit: cover;
     border-radius: 10px;
+    background: #0b1220;
 }
 
+/* BADGE */
 .badge {
     background: #38bdf8;
     padding: 3px 8px;
@@ -66,6 +109,7 @@ a {
     font-size: 12px;
 }
 
+/* BUTTONS */
 button {
     padding: 10px;
     width: 100%;
@@ -87,12 +131,7 @@ button:disabled {
     cursor: not-allowed;
 }
 
-.topbar {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
+/* SUPPORT BOX */
 .support-box {
     margin-top: 40px;
     background: #111a2e;
@@ -104,6 +143,7 @@ button:disabled {
     color: #38bdf8;
 }
 
+/* FOOTER */
 footer {
     text-align: center;
     padding: 20px;
@@ -111,36 +151,27 @@ footer {
     background: #111a2e;
     color: #94a3b8;
 }
+
+/* EMPTY STATE */
+.empty {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+}
+
 </style>
 </head>
 
 <body>
-
-<header>
-    <div><b>Digital Store</b></div>
-
-    <div class="topbar">
-        <form method="GET" action="/" class="search-box">
-            <input name="search" placeholder="Search products...">
-        </form>
-
-        {% if session.get('user') %}
-            <span>👤 {{ session['user'] }}</span>
-            <a href="/logout">Logout</a>
-        {% else %}
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
-        {% endif %}
-
-        {% if session.get('role') == 'seller' %}
-            <a href="/add">+ Sell</a>
-        {% endif %}
-    </div>
-</header>
-
 <div class="container">
 
     <h2>🔥 Products</h2>
+
+    {% if products|length == 0 %}
+        <div class="empty">
+            No products available yet.
+        </div>
+    {% endif %}
 
     <div class="product-grid">
 
@@ -149,12 +180,17 @@ footer {
 
             {% if p.image_path %}
                 <img src="{{ p.image_path }}" alt="product image">
+            {% else %}
+                <img src="/static/placeholder.png" alt="no image">
             {% endif %}
 
             <h3>{{ p.name }}</h3>
             <p>{{ p.description }}</p>
 
-            <p><b>Category:</b> <span class="badge">{{ p.category }}</span></p>
+            <p>
+                <b>Category:</b>
+                <span class="badge">{{ p.category }}</span>
+            </p>
 
             <p>
                 {% if p.is_free %}
@@ -176,13 +212,12 @@ footer {
         {% endfor %}
 
     </div>
-
     <!-- CUSTOMER CARE -->
     <div class="support-box">
         <h3>📞 Customer Care</h3>
         <p>If you have issues downloading or uploading products:</p>
 
-        <p>📧 Email: 
+        <p>📧 Email:
             <a href="mailto:customercaremetmcmarketplace@gmail.com">
                 customercaremetmcmarketplace@gmail.com
             </a>
