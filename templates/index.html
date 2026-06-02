@@ -67,7 +67,6 @@ a {
 .container {
     padding: 20px;
 }
-<style>
 
 /* PRODUCT GRID */
 .product-grid {
@@ -92,7 +91,7 @@ a {
     transform: scale(1.02);
 }
 
-/* IMAGE FIX (Render-safe) */
+/* IMAGE */
 .card img {
     width: 100%;
     height: 150px;
@@ -152,13 +151,18 @@ footer {
     color: #94a3b8;
 }
 
-/* EMPTY STATE */
+/* EMPTY */
 .empty {
     text-align: center;
     padding: 40px;
     color: #94a3b8;
 }
+</style>
+</head>
 
+<body>
+
+<!-- HEADER MUST BE HERE -->
 <header>
     <div><b>Digital Store</b></div>
 
@@ -170,25 +174,20 @@ footer {
 
         {% if session.get('user') %}
 
-            <!-- USER INFO -->
             <span>👤 {{ session['user'] }}</span>
 
-            <!-- BUYER VIEW -->
             {% if session.get('role') == 'buyer' %}
                 <a href="/">🏠 Home</a>
             {% endif %}
 
-            <!-- SELLER VIEW -->
             {% if session.get('role') == 'seller' %}
                 <a href="/add">+ Sell</a>
             {% endif %}
 
-            <!-- LOGOUT (FOR ALL LOGGED USERS) -->
             <a href="/logout">🚪 Logout</a>
 
         {% else %}
 
-            <!-- NOT LOGGED IN -->
             <a href="/login">Login</a>
             <a href="/register">Register</a>
 
@@ -197,10 +196,6 @@ footer {
     </div>
 </header>
 
-</style>
-</head>
-
-<body>
 <div class="container">
 
     <h2>🔥 Products</h2>
@@ -217,26 +212,21 @@ footer {
         <div class="card">
 
             {% if p.image_path %}
-                <img src="{{ p.image_path }}" alt="product image">
+                <img src="{{ p.image_path }}">
             {% else %}
-                <img src="/static/placeholder.png" alt="no image">
+                <img src="/static/placeholder.png">
             {% endif %}
 
             <h3>{{ p.name }}</h3>
             <p>{{ p.description }}</p>
 
-            <p>
-                <b>Category:</b>
-                <span class="badge">{{ p.category }}</span>
-            </p>
+            <p><b>Category:</b> <span class="badge">{{ p.category }}</span></p>
 
-            <p>
-                {% if p.is_free %}
-                    <b style="color:#22c55e">FREE</b>
-                {% else %}
-                    <b>${{ p.price }}</b>
-                {% endif %}
-            </p>
+            {% if p.is_free %}
+                <b style="color:#22c55e">FREE</b>
+            {% else %}
+                <b>${{ p.price }}</b>
+            {% endif %}
 
             {% if p.is_free %}
                 <a href="/download/{{ p.id }}">
@@ -250,19 +240,11 @@ footer {
         {% endfor %}
 
     </div>
-    <!-- CUSTOMER CARE -->
+
     <div class="support-box">
         <h3>📞 Customer Care</h3>
-        <p>If you have issues downloading or uploading products:</p>
-
-        <p>📧 Email:
-            <a href="mailto:customercaremetmcmarketplace@gmail.com">
-                customercaremetmcmarketplace@gmail.com
-            </a>
-        </p>
-
-        <p>💬 WhatsApp: +263 777961678</p>
-        <p>⏰ Available: 24/7</p>
+        <p>Email: customercaremetmcmarketplace@gmail.com</p>
+        <p>WhatsApp: +263 777961678</p>
     </div>
 
 </div>
