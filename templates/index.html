@@ -159,6 +159,44 @@ footer {
     color: #94a3b8;
 }
 
+<header>
+    <div><b>Digital Store</b></div>
+
+    <div class="topbar">
+
+        <form method="GET" action="/" class="search-box">
+            <input name="search" placeholder="Search products...">
+        </form>
+
+        {% if session.get('user') %}
+
+            <!-- USER INFO -->
+            <span>👤 {{ session['user'] }}</span>
+
+            <!-- BUYER VIEW -->
+            {% if session.get('role') == 'buyer' %}
+                <a href="/">🏠 Home</a>
+            {% endif %}
+
+            <!-- SELLER VIEW -->
+            {% if session.get('role') == 'seller' %}
+                <a href="/add">+ Sell</a>
+            {% endif %}
+
+            <!-- LOGOUT (FOR ALL LOGGED USERS) -->
+            <a href="/logout">🚪 Logout</a>
+
+        {% else %}
+
+            <!-- NOT LOGGED IN -->
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+
+        {% endif %}
+
+    </div>
+</header>
+
 </style>
 </head>
 
