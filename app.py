@@ -3,6 +3,7 @@ from flask import send_file, url_for, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
 from werkzeug.utils import secure_filename
+from supabase import create_client
 
 import os
 import uuid
@@ -13,6 +14,23 @@ import uuid
 
 app = Flask(__name__)
 app.secret_key = "secret123"
+
+# =====================
+# SUPABASE STORAGE
+# =====================
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+supabase = None
+
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase = create_client(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    )
+
+BUCKET_NAME = "products"
 
 # =====================
 # DATABASE
@@ -71,7 +89,10 @@ class Product(db.Model):
     name = db.Column(db.String(100))
     description = db.Column(db.Text)
 
-    price = db.Column(db.Float, default=0)
+    price = db.Column(
+        db.Float,
+        default=0
+    )
 
     is_free = db.Column(
         db.Integer,
@@ -87,19 +108,19 @@ class Product(db.Model):
     )
 
     file_path = db.Column(
-        db.String(255)
+        db.String(500)
     )
 
     image_path = db.Column(
-        db.String(255)
+        db.String(500)
     )
-
-# =====================
+    # =====================
 # HEALTH CHECK
 # =====================
 
 @app.route("/health")
 def health():
+
     return {
         "status": "ok",
         "products": Product.query.count()
@@ -111,6 +132,7 @@ def health():
 
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
+
     return send_from_directory(
         app.config["UPLOAD_FOLDER"],
         filename
@@ -216,8 +238,7 @@ def login():
         return redirect("/login")
 
     return render_template("login.html")
-
-# =====================
+    # =====================
 # LOGOUT
 # =====================
 
@@ -228,8 +249,10 @@ def logout():
 
     flash("Logged out")
     return redirect("/")
-    # =====================
-# ADD PRODUCT (SELLER ONLY)
+
+
+# =====================
+# ADD PRODUCT (SELLER ONLY + SUPABASE UPLOAD)
 # =====================
 
 @app.route("/add", methods=["GET", "POST"])
@@ -248,17 +271,47 @@ def add():
         file = request.files["file"]
         image = request.files.get("image")
 
-        # secure file names
+        # =====================
+        # UPLOAD PRODUCT FILE TO SUPABASE
+        # =====================
+
         file_name = f"{uuid.uuid4()}_{secure_filename(file.filename)}"
-        file_path = os.path.join(app.config["UPLOAD_FOLDER"], file_name)
-        file.save(file_path)
+        file_bytes = file.read()
+
+        supabase.storage.from_(BUCKET_NAME).upload(
+            file_name,
+            file_bytes,
+            {"content-type": file.content_type}
+        )
+
+        file_path = supabase.storage.from_(
+            BUCKET_NAME
+        ).get_public_url(file_name)
+
+        # =====================
+        # UPLOAD IMAGE TO SUPABASE
+        # =====================
 
         image_path = None
 
         if image and image.filename:
+
             image_name = f"{uuid.uuid4()}_{secure_filename(image.filename)}"
-            image_path = os.path.join(app.config["UPLOAD_FOLDER"], image_name)
-            image.save(image_path)
+            image_bytes = image.read()
+
+            supabase.storage.from_(BUCKET_NAME).upload(
+                image_name,
+                image_bytes,
+                {"content-type": image.content_type}
+            )
+
+            image_path = supabase.storage.from_(
+                BUCKET_NAME
+            ).get_public_url(image_name)
+
+        # =====================
+        # SAVE PRODUCT TO DB
+        # =====================
 
         product = Product(
             name=request.form["name"],
@@ -279,6 +332,7 @@ def add():
 
     return render_template("add.html")
 
+
 # =====================
 # VIEW SINGLE PRODUCT
 # =====================
@@ -295,8 +349,7 @@ def product(product_id):
         "product.html",
         product=product
     )
-
-# =====================
+    # =====================
 # DOWNLOAD PRODUCT
 # =====================
 
@@ -311,7 +364,12 @@ def download(product_id):
     if not product.is_free:
         return "Paid product (coming soon)"
 
-    return send_file(product.file_path, as_attachment=True)
+    # =====================
+    # SUPABASE FILE DOWNLOAD (REDIRECT)
+    # =====================
+
+    return redirect(product.file_path)
+
 
 # =====================
 # DELETE PRODUCT (SELLER ONLY)
@@ -331,11 +389,15 @@ def delete(product_id):
     if product.seller != session["user"]:
         return "Not allowed"
 
+    # NOTE:
+    # Supabase file deletion can be added later if needed
+
     db.session.delete(product)
     db.session.commit()
 
     flash("Product deleted")
     return redirect("/")
+
 
 # =====================
 # INIT DATABASE
@@ -344,13 +406,17 @@ def delete(product_id):
 with app.app_context():
     db.create_all()
 
+
 # =====================
-# START SERVER (LOCAL ONLY)
+# RUN APP
 # =====================
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+
     app.run(
         host="0.0.0.0",
-        port=int(os.environ.get("PORT", 5000)),
+        port=port,
         debug=True
     )
+    
