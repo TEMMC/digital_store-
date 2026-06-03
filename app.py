@@ -1,9 +1,16 @@
-from flask import Flask, render_template, request, redirect, session
-from flask import send_file, url_for, flash, send_from_directory
+from flask import Flask, render_template, request, redirect
+from flask import session, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
 from werkzeug.utils import secure_filename
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
+)
+
 from supabase import create_client
+
+from datetime import datetime
 
 import os
 import uuid
@@ -58,7 +65,6 @@ UPLOAD_FOLDER = os.environ.get(
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
 # =====================
 # MODELS
 # =====================
@@ -72,8 +78,21 @@ class User(db.Model):
         nullable=False
     )
 
+    email = db.Column(
+        db.String(200),
+        unique=True
+    )
+
+    phone = db.Column(
+        db.String(50)
+    )
+
+    profile_image = db.Column(
+        db.String(500)
+    )
+
     password = db.Column(
-        db.String(100),
+        db.String(300),
         nullable=False
     )
 
@@ -82,12 +101,26 @@ class User(db.Model):
         default="buyer"
     )
 
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
 
 class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
 
-    name = db.Column(db.String(100))
-    description = db.Column(db.Text)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    name = db.Column(
+        db.String(100)
+    )
+
+    description = db.Column(
+        db.Text
+    )
 
     price = db.Column(
         db.Float,
@@ -113,6 +146,93 @@ class Product(db.Model):
 
     image_path = db.Column(
         db.String(500)
+    )
+
+    views = db.Column(
+        db.Integer,
+        default=0
+    )
+
+    downloads = db.Column(
+        db.Integer,
+        default=0
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+
+class News(db.Model):
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    title = db.Column(
+        db.String(300)
+    )
+
+    content = db.Column(
+        db.Text
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+
+class Message(db.Model):
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    sender = db.Column(
+        db.String(100)
+    )
+
+    receiver = db.Column(
+        db.String(100)
+    )
+
+    message = db.Column(
+        db.Text
+    )
+
+    is_read = db.Column(
+        db.Integer,
+        default=0
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+
+class DownloadLog(db.Model):
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    username = db.Column(
+        db.String(100)
+    )
+
+    product_id = db.Column(
+        db.Integer
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
     )
     # =====================
 # HEALTH CHECK
