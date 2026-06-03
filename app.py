@@ -20,11 +20,16 @@ import uuid
 # =====================
 
 app = Flask(__name__)
-app.secret_key = "secret123"
+app.secret_key = os.getenv(
+"SECRET_KEY",
+"change-this-secret-key"
+)
 
-# =====================
-# SUPABASE STORAGE
-# =====================
+=====================
+
+SUPABASE STORAGE
+
+=====================
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
@@ -32,39 +37,163 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = None
 
 if SUPABASE_URL and SUPABASE_KEY:
+
+try:
+
     supabase = create_client(
         SUPABASE_URL,
         SUPABASE_KEY
     )
 
+except Exception as e:
+
+    print(
+        "Supabase connection failed:",
+        str(e)
+    )
+
 BUCKET_NAME = "products"
 
-# =====================
-# DATABASE
-# =====================
+=====================
+
+DATABASE
+
+=====================
 
 DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "sqlite:///store.db"
+"DATABASE_URL",
+"sqlite:///store.db"
 )
 
-app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config[
+"SQLALCHEMY_DATABASE_URI"
+] = DATABASE_URL
+
+app.config[
+"SQLALCHEMY_TRACK_MODIFICATIONS"
+] = False
+
+app.config[
+"MAX_CONTENT_LENGTH"
+] = 500 * 1024 * 1024
 
 db = SQLAlchemy(app)
 
-# =====================
-# UPLOADS
-# =====================
+=====================
+
+UPLOADS
+
+=====================
 
 UPLOAD_FOLDER = os.environ.get(
-    "UPLOAD_FOLDER",
-    os.path.join(os.getcwd(), "uploads")
+"UPLOAD_FOLDER",
+os.path.join(
+os.getcwd(),
+"uploads"
+)
 )
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(
+UPLOAD_FOLDER,
+exist_ok=True
+)
 
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config[
+"UPLOAD_FOLDER"
+] = UPLOAD_FOLDER
+
+=====================
+
+MARKETPLACE SETTINGS
+
+=====================
+
+MARKETPLACE_NAME = (
+"METMC Digital Store"
+)
+
+SITE_VERSION = "2.0"
+
+DEFAULT_CATEGORIES = [
+
+"Apps",
+"Games",
+"Documents",
+"Music",
+"Videos",
+"Ebooks",
+"Scripts",
+"Templates",
+"Courses",
+"AI Tools",
+"Graphics",
+"Themes",
+"Plugins",
+"Source Code",
+"Education",
+"Business",
+"News"
+
+]
+
+=====================
+
+SUPABASE HELPERS
+
+=====================
+
+def supabase_enabled():
+
+return (
+    supabase is not None
+)
+
+def generate_filename(
+filename
+):
+
+return (
+    f"{uuid.uuid4()}_"
+    f"{secure_filename(filename)}"
+)
+
+def public_file_url(
+filename
+):
+
+return (
+    f"{SUPABASE_URL}"
+    f"/storage/v1/object/public/"
+    f"{BUCKET_NAME}/"
+    f"{filename}"
+)
+
+def upload_to_supabase(
+file_object
+):
+
+if not supabase_enabled():
+    return None, None
+
+filename = generate_filename(
+    file_object.filename
+)
+
+supabase.storage.from_(
+    BUCKET_NAME
+).upload(
+    filename,
+    file_object.read(),
+    {
+        "content-type":
+        file_object.content_type
+    }
+)
+
+return (
+    filename,
+    public_file_url(filename)
+)
 # =====================
 # MODELS
 # =====================
@@ -300,11 +429,11 @@ def home():
         products=products,
         categories=categories
     )
-=====================
+#=====================
 
-REGISTER (UPGRADED)
+#REGISTER (UPGRADED)
 
-=====================
+#=====================
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -354,11 +483,11 @@ if request.method == "POST":
 
 return render_template("register.html")
 
-=====================
+#=====================
 
-LOGIN (UPGRADED)
+#LOGIN (UPGRADED)
 
-=====================
+#=====================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
