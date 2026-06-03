@@ -300,64 +300,96 @@ def home():
         products=products,
         categories=categories
     )
+=====================
 
-# =====================
-# REGISTER
-# =====================
+REGISTER (UPGRADED)
+
+=====================
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
-    if request.method == "POST":
+if request.method == "POST":
 
-        existing = User.query.filter_by(
-            username=request.form["username"]
-        ).first()
+    username = request.form["username"].strip()
+    email = request.form["email"].strip()
+    phone = request.form["phone"].strip()
+    password = request.form["password"]
+    role = request.form["role"]
 
-        if existing:
-            flash("Username already exists")
-            return redirect("/register")
+    existing_user = User.query.filter_by(
+        username=username
+    ).first()
 
-        user = User(
-            username=request.form["username"],
-            password=request.form["password"],
-            role=request.form["role"]
-        )
+    if existing_user:
+        flash("Username already exists")
+        return redirect("/register")
 
-        db.session.add(user)
-        db.session.commit()
+    existing_email = User.query.filter_by(
+        email=email
+    ).first()
 
-        flash("Account created successfully")
-        return redirect("/login")
+    if existing_email:
+        flash("Email already exists")
+        return redirect("/register")
 
-    return render_template("register.html")
+    hashed_password = generate_password_hash(
+        password
+    )
 
-# =====================
-# LOGIN
-# =====================
+    user = User(
+        username=username,
+        email=email,
+        phone=phone,
+        password=hashed_password,
+        role=role
+    )
+
+    db.session.add(user)
+    db.session.commit()
+
+    flash("Account created successfully")
+
+    return redirect("/login")
+
+return render_template("register.html")
+
+=====================
+
+LOGIN (UPGRADED)
+
+=====================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
-    if request.method == "POST":
+if request.method == "POST":
 
-        user = User.query.filter_by(
-            username=request.form["username"],
-            password=request.form["password"]
-        ).first()
+    username = request.form["username"]
+    password = request.form["password"]
 
-        if user:
+    user = User.query.filter_by(
+        username=username
+    ).first()
 
-            session["user"] = user.username
-            session["role"] = user.role
+    if user and check_password_hash(
+        user.password,
+        password
+    ):
 
-            flash("Login successful")
-            return redirect("/")
+        session["user"] = user.username
+        session["role"] = user.role
+        session["user_id"] = user.id
 
-        flash("Invalid username or password")
-        return redirect("/login")
+        flash("Login successful")
 
-    return render_template("login.html")
+        return redirect("/")
+
+    flash("Invalid username or password")
+
+    return redirect("/login")
+
+return render_template("login.html")
     # =====================
 # LOGOUT
 # =====================
