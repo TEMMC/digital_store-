@@ -1,77 +1,218 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html lang="en">
 <head>
-    <title>Digital Store</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>METMC Digital Store</title><style>
 
-    <style>
-        body {
-            font-family: Arial;
-            margin: 0;
-            background: #f4f4f4;
-        }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-        .nav {
-            background: #111;
-            padding: 15px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-        }
+body{
+    background:#0f172a;
+    color:white;
+    font-family:Arial,sans-serif;
+    min-height:100vh;
+}
 
-        .nav a {
-            color: white;
-            margin-left: 10px;
-            text-decoration: none;
-        }
+/* HEADER */
 
-        .container {
-            padding: 20px;
-        }
+header{
+    background:#111827;
+    border-bottom:1px solid #1e293b;
+    padding:15px 25px;
 
-        .card {
-            background: white;
-            padding: 15px;
-            margin: 10px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+}
 
-        button, a.btn {
-            padding: 8px 12px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-        }
+.logo{
+    font-size:24px;
+    font-weight:bold;
+    color:#38bdf8;
+}
 
-        .free {
-            color: green;
-            font-weight: bold;
-        }
+nav{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    flex-wrap:wrap;
+}
 
-        .price {
-            color: #333;
-            font-weight: bold;
-        }
-    </style>
-</head>
+nav a{
+    color:white;
+    text-decoration:none;
+}
 
-<body>
+.btn{
+    background:#38bdf8;
+    color:black;
+    padding:10px 15px;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:bold;
+}
 
-<div class="nav">
-    <div><b>Digital Store</b></div>
-    <div>
-        <a href="/">Home</a>
-        <a href="/add">Add</a>
-        <a href="/dashboard">Dashboard</a>
-    </div>
-</div>
+.btn:hover{
+    opacity:.9;
+}
 
-<div class="container">
-    {% block content %}{% endblock %}
-</div>
+/* PAGE CONTENT */
 
-</body>
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:25px;
+}
+
+/* CARD */
+
+.card{
+    background:#1e293b;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:20px;
+}
+
+/* BUTTONS */
+
+.green-btn{
+    background:#22c55e;
+    color:white;
+    padding:10px 15px;
+    border-radius:10px;
+    text-decoration:none;
+    border:none;
+    cursor:pointer;
+}
+
+.red-btn{
+    background:#ef4444;
+    color:white;
+    padding:10px 15px;
+    border-radius:10px;
+    text-decoration:none;
+    border:none;
+    cursor:pointer;
+}
+
+.blue-btn{
+    background:#38bdf8;
+    color:black;
+    padding:10px 15px;
+    border-radius:10px;
+    text-decoration:none;
+    border:none;
+    cursor:pointer;
+}
+
+/* FLASH */
+
+.flash{
+    background:#22c55e;
+    color:white;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:15px;
+}
+
+/* FORMS */
+
+input,
+textarea,
+select{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#334155;
+    color:white;
+    margin-bottom:15px;
+}
+
+textarea{
+    min-height:120px;
+}
+
+button{
+    cursor:pointer;
+}
+
+/* FOOTER */
+
+footer{
+    margin-top:50px;
+    background:#111827;
+    text-align:center;
+    padding:30px;
+    color:#94a3b8;
+}
+
+/* MOBILE */
+
+@media(max-width:700px){
+
+header{
+    flex-direction:column;
+    gap:15px;
+}
+
+nav{
+    justify-content:center;
+}
+
+}
+
+</style></head>
+<body><header><div class="logo">
+METMC Digital Store
+</div><nav>{% if session.get("user") %}
+
+<span>
+👤 {{ session["user"] }}
+</span>{% if session.get("role") == "seller" %}
+<a href="/add" class="btn">
+➕ Upload Product
+</a>
+
+<a href="/dashboard" class="btn">
+📊 Dashboard
+</a>
+{% endif %}<a href="/" class="btn">
+🏠 Home
+</a><a href="/logout">
+🚪 Logout
+</a>{% else %}
+
+<a href="/login">
+Login
+</a><a href="/register" class="btn">
+Register
+</a>{% endif %}
+
+</nav></header><div class="container">{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+
+<div class="flash">
+{{ message }}
+</div>{% endfor %}
+{% endif %}
+{% endwith %}
+
+{% block content %}
+{% endblock %}
+
+</div><footer><h3>METMC Digital Store</h3><p>Version 2.0</p><br><p>
+Customer Care:
+customercaremetmcmarketplace@gmail.com
+</p><p>
+WhatsApp:
++263 777 961 678
+</p><br><p>
+© 2026 METMC Digital Store
+</p></footer></body>
 </html>

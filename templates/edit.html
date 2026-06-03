@@ -1,26 +1,187 @@
-<!DOCTYPE html>
-<html>
-<head><title>Edit Product</title></head>
-<body>
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Edit Product</title><style>
 
-<h2>Edit Product</h2>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-<form method="POST">
+body{
+    background:#0f172a;
+    font-family:Arial, sans-serif;
+    color:white;
+    min-height:100vh;
+}
 
-<input name="name" value="{{ product.name }}"><br><br>
+.container{
+    max-width:800px;
+    margin:40px auto;
+    padding:20px;
+}
 
-<textarea name="description">{{ product.description }}</textarea><br><br>
+.card{
+    background:#1e293b;
+    border-radius:16px;
+    padding:25px;
+    box-shadow:0 10px 25px rgba(0,0,0,.3);
+}
 
-<input name="price" value="{{ product.price }}"><br><br>
+h1{
+    text-align:center;
+    margin-bottom:25px;
+    color:#38bdf8;
+}
 
-<label>
-<input type="checkbox" name="is_free" {% if product.is_free %}checked{% endif %}>
-FREE
-</label><br><br>
+label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:bold;
+}
 
-<button type="submit">Save</button>
+input,
+textarea,
+select{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#334155;
+    color:white;
+    margin-bottom:20px;
+}
 
-</form>
+textarea{
+    min-height:150px;
+    resize:vertical;
+}
 
-</body>
+.checkbox{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.checkbox input{
+    width:auto;
+    margin:0;
+}
+
+.preview{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.preview img{
+    width:100%;
+    max-height:250px;
+    object-fit:cover;
+    border-radius:12px;
+}
+
+.actions{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.btn{
+    flex:1;
+    text-align:center;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.save-btn{
+    background:#22c55e;
+    color:white;
+}
+
+.save-btn:hover{
+    background:#16a34a;
+}
+
+.cancel-btn{
+    background:#ef4444;
+    color:white;
+}
+
+.cancel-btn:hover{
+    background:#dc2626;
+}
+
+.info-box{
+    background:#0f172a;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:20px;
+    color:#cbd5e1;
+}
+
+</style></head>
+<body><div class="container"><div class="card"><h1>✏ Edit Product</h1><div class="info-box">
+Product ID: {{ product.id }}<br>
+Views: {{ product.views }} |
+Downloads: {{ product.downloads }}
+</div>{% if product.image_path %}
+
+<div class="preview">
+<img src="{{ product.image_path }}">
+</div>
+{% endif %}<form method="POST"><label>Product Name</label>
+<input
+type="text"
+name="name"
+value="{{ product.name }}"
+required
+
+«»
+
+<label>Description</label>
+
+<textarea
+name="description"
+required
+>{{ product.description }}</textarea><label>Price (USD)</label>
+<input
+type="number"
+step="0.01"
+name="price"
+value="{{ product.price }}"
+
+«»
+
+<div class="checkbox">
+<input
+type="checkbox"
+name="is_free"
+{% if product.is_free %}checked{% endif %}
+>
+<span>Make this product FREE</span>
+</div><div class="actions"><button
+type="submit"
+class="btn save-btn"
+
+«»
+
+💾 Save Changes
+</button>
+
+<a
+href="/dashboard"
+class="btn cancel-btn"
+
+«»
+
+❌ Cancel
+</a>
+
+</div></form></div></div></body>
 </html>

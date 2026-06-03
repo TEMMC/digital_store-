@@ -1,256 +1,397 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Digital Store</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>METMC Digital Store</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0b1220;
-    color: white;
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
-/* HEADER */
-header {
-    background: #111a2e;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+body{
+    background:#0f172a;
+    color:white;
+    font-family:Arial, sans-serif;
 }
 
-a {
-    color: #38bdf8;
-    text-decoration: none;
+header{
+    background:#111827;
+    padding:15px 25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    border-bottom:1px solid #1e293b;
 }
 
-/* TOP BAR */
-.topbar {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
+.logo{
+    font-size:22px;
+    font-weight:bold;
+    color:#38bdf8;
 }
 
-/* SEARCH */
-.search-box input {
-    padding: 10px;
-    width: 200px;
-    border-radius: 8px;
-    border: none;
+nav{
+    display:flex;
+    gap:15px;
+    align-items:center;
 }
 
-/* CATEGORY BAR */
-.category-bar {
-    margin-top: 15px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+nav a{
+    color:white;
+    text-decoration:none;
 }
 
-.category-bar a {
-    padding: 6px 12px;
-    background: #1e293b;
-    border-radius: 8px;
-    font-size: 13px;
-    transition: 0.2s;
+.btn{
+    background:#38bdf8;
+    color:black;
+    padding:8px 15px;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:bold;
 }
 
-.category-bar a:hover {
-    background: #38bdf8;
-    color: black;
+.hero{
+    text-align:center;
+    padding:60px 20px;
 }
 
-/* PAGE WRAPPER */
-.container {
-    padding: 20px;
+.hero h1{
+    font-size:40px;
+    margin-bottom:10px;
 }
 
-/* PRODUCT GRID */
-.product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 15px;
-    margin-top: 20px;
+.hero p{
+    color:#cbd5e1;
 }
 
-/* PRODUCT CARD */
-.card {
-    background: #1e293b;
-    padding: 15px;
-    border-radius: 12px;
-    transition: 0.2s;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+.search-box{
+    max-width:800px;
+    margin:20px auto;
+    display:flex;
+    gap:10px;
 }
 
-.card:hover {
-    transform: scale(1.02);
+.search-box input{
+    flex:1;
+    padding:12px;
+    border:none;
+    border-radius:10px;
 }
 
-/* IMAGE */
-.card img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 10px;
-    background: #0b1220;
+.search-box button{
+    background:#38bdf8;
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    font-weight:bold;
+    cursor:pointer;
 }
 
-/* BADGE */
-.badge {
-    background: #38bdf8;
-    padding: 3px 8px;
-    border-radius: 8px;
-    font-size: 12px;
+.categories{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    margin:20px;
 }
 
-/* BUTTONS */
-button {
-    padding: 10px;
-    width: 100%;
-    margin-top: 10px;
-    border: none;
-    background: #22c55e;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
+.categories a{
+    text-decoration:none;
+    color:white;
+    background:#1e293b;
+    padding:8px 14px;
+    border-radius:20px;
 }
 
-button:hover {
-    background: #16a34a;
+.categories a:hover{
+    background:#38bdf8;
+    color:black;
 }
 
-button:disabled {
-    background: gray;
-    cursor: not-allowed;
+.products{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:20px;
+    padding:25px;
 }
 
-/* SUPPORT BOX */
-.support-box {
-    margin-top: 40px;
-    background: #111a2e;
-    padding: 20px;
-    border-radius: 12px;
+.card{
+    background:#1e293b;
+    border-radius:15px;
+    overflow:hidden;
+    transition:.3s;
 }
 
-.support-box h3 {
-    color: #38bdf8;
+.card:hover{
+    transform:translateY(-5px);
 }
 
-/* FOOTER */
-footer {
-    text-align: center;
-    padding: 20px;
-    margin-top: 40px;
-    background: #111a2e;
-    color: #94a3b8;
+.card img{
+    width:100%;
+    height:200px;
+    object-fit:cover;
 }
 
-/* EMPTY */
-.empty {
-    text-align: center;
-    padding: 40px;
-    color: #94a3b8;
+.card-content{
+    padding:15px;
 }
+
+.card h3{
+    margin-bottom:10px;
+}
+
+.card p{
+    color:#cbd5e1;
+    margin-bottom:10px;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 10px;
+    border-radius:20px;
+    background:#334155;
+    font-size:12px;
+    margin-bottom:10px;
+}
+
+.featured{
+    background:gold;
+    color:black;
+}
+
+.price{
+    font-size:20px;
+    font-weight:bold;
+    margin:10px 0;
+}
+
+.free{
+    color:#22c55e;
+}
+
+.stats{
+    display:flex;
+    justify-content:space-between;
+    color:#94a3b8;
+    margin:10px 0;
+    font-size:14px;
+}
+
+.view-btn{
+    display:block;
+    text-align:center;
+    text-decoration:none;
+    background:#38bdf8;
+    color:black;
+    padding:10px;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.empty{
+    text-align:center;
+    padding:50px;
+}
+
+footer{
+    margin-top:50px;
+    padding:30px;
+    text-align:center;
+    background:#111827;
+    color:#94a3b8;
+}
+
+.flash{
+    background:#22c55e;
+    color:white;
+    padding:12px;
+    margin:15px;
+    border-radius:10px;
+    text-align:center;
+}
+
 </style>
-</head>
 
+</head>
 <body>
 
-<!-- HEADER MUST BE HERE -->
 <header>
-    <div><b>Digital Store</b></div>
 
-    <div class="topbar">
+<div class="logo">
+METMC Digital Store
+</div>
 
-        <form method="GET" action="/" class="search-box">
-            <input name="search" placeholder="Search products...">
-        </form>
+<nav>
 
-        {% if session.get('user') %}
+{% if session.get("user") %}
 
-            <span>👤 {{ session['user'] }}</span>
+<span>👤 {{ session["user"] }}</span>
 
-            {% if session.get('role') == 'buyer' %}
-                <a href="/">🏠 Home</a>
-            {% endif %}
+{% if session.get("role") == "seller" %}
+<a href="/add" class="btn">➕ Upload Product</a>
+{% endif %}
 
-            {% if session.get('role') == 'seller' %}
-                <a href="/add">+ Sell</a>
-            {% endif %}
+<a href="/logout">🚪 Logout</a>
 
-            <a href="/logout">🚪 Logout</a>
+{% else %}
 
-        {% else %}
+<a href="/login">Login</a>
+<a href="/register" class="btn">Register</a>
 
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
+{% endif %}
 
-        {% endif %}
+</nav>
 
-    </div>
 </header>
 
-<div class="container">
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="flash">
+{{ message }}
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 
-    <h2>🔥 Products</h2>
+<section class="hero">
 
-    {% if products|length == 0 %}
-        <div class="empty">
-            No products available yet.
-        </div>
-    {% endif %}
+<h1>🚀 Digital Marketplace</h1>
 
-    <div class="product-grid">
+<p>
+Apps, Games, Source Code, Courses,
+Ebooks, Templates and more.
+</p>
 
-        {% for p in products %}
-        <div class="card">
+<form method="GET" action="/" class="search-box">
 
-            {% if p.image_path %}
-                <img src="{{ p.image_path }}">
-            {% else %}
-                <img src="/static/placeholder.png">
-            {% endif %}
+<input
+type="text"
+name="search"
+placeholder="Search products..."
+value="{{ request.args.get('search','') }}"
+>
 
-            <h3>{{ p.name }}</h3>
-            <p>{{ p.description }}</p>
+<button type="submit">
+Search
+</button>
 
-            <p><b>Category:</b> <span class="badge">{{ p.category }}</span></p>
+</form>
 
-            {% if p.is_free %}
-                <b style="color:#22c55e">FREE</b>
-            {% else %}
-                <b>${{ p.price }}</b>
-            {% endif %}
+</section>
 
-            {% if p.is_free %}
-                <a href="/download/{{ p.id }}">
-                    <button>⬇ Download</button>
-                </a>
-            {% else %}
-                <button disabled>Paid (Coming soon)</button>
-            {% endif %}
+<div class="categories">
 
-        </div>
-        {% endfor %}
+<a href="/">All</a>
 
-    </div>
-
-    <div class="support-box">
-        <h3>📞 Customer Care</h3>
-        <p>Email: customercaremetmcmarketplace@gmail.com</p>
-        <p>WhatsApp: +263 777961678</p>
-    </div>
+{% for category in categories %}
+<a href="/?category={{ category }}">
+{{ category }}
+</a>
+{% endfor %}
 
 </div>
 
+{% if products %}
+
+<div class="products">
+
+{% for p in products %}
+
+<div class="card">
+
+{% if p.image_path %}
+<img src="{{ p.image_path }}">
+{% else %}
+<img src="https://via.placeholder.com/400x250?text=No+Image">
+{% endif %}
+
+<div class="card-content">
+
+<h3>{{ p.name }}</h3>
+
+<p>
+{{ p.description[:120] }}
+{% if p.description|length > 120 %}
+...
+{% endif %}
+</p>
+
+<div class="badge">
+{{ p.category }}
+</div>
+
+{% if p.featured %}
+<div class="badge featured">
+⭐ Featured
+</div>
+{% endif %}
+
+<div class="price">
+
+{% if p.is_free %}
+<span class="free">FREE</span>
+{% else %}
+${{ p.price }}
+{% endif %}
+
+</div>
+
+<div class="stats">
+<span>👀 {{ p.views }}</span>
+<span>⬇ {{ p.downloads }}</span>
+</div>
+
+<div class="stats">
+<span>⭐ {{ p.rating }}</span>
+<span>({{ p.rating_count }})</span>
+</div>
+
+<a href="/product/{{ p.id }}" class="view-btn">
+View Product
+</a>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="empty">
+
+<h2>No products found</h2>
+
+<p>
+Try another search or category.
+</p>
+
+</div>
+
+{% endif %}
+
 <footer>
-    Built with ❤️ by <b>Tinotenda Enock Mapfumo</b>
+
+<h3>METMC Digital Store</h3>
+
+<p>Version 2.0</p>
+
+<br>
+
+<p>
+Customer Care:
+customercaremetmcmarketplace@gmail.com
+</p>
+
 </footer>
 
 </body>

@@ -1,64 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Register</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Register - METMC</title>
 
 <style>
-body {
-    background:#0b1220;
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#0f172a;
     color:white;
-    font-family:Arial;
     display:flex;
     justify-content:center;
     align-items:center;
-    height:100vh;
+    min-height:100vh;
+    padding:20px;
 }
 
-.box {
-    background:#1e293b;
-    padding:25px;
-    border-radius:12px;
-    width:300px;
-}
-
-input, select {
+/* CARD */
+.box{
+    background:#111827;
+    padding:30px;
+    border-radius:15px;
     width:100%;
-    padding:10px;
+    max-width:380px;
+    border:1px solid #1e293b;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+
+/* TITLE */
+h2{
+    text-align:center;
+    margin-bottom:20px;
+    color:#38bdf8;
+}
+
+/* INPUTS */
+input, select{
+    width:100%;
+    padding:12px;
     margin:8px 0;
-    border-radius:6px;
+    border-radius:8px;
     border:none;
+    background:#1e293b;
+    color:white;
+    outline:none;
 }
 
-button {
+input:focus, select:focus{
+    border:1px solid #38bdf8;
+}
+
+/* BUTTON */
+button{
     width:100%;
-    padding:10px;
+    padding:12px;
     background:#22c55e;
     border:none;
-    border-radius:6px;
+    border-radius:8px;
+    font-weight:bold;
     cursor:pointer;
+    margin-top:10px;
+    color:black;
 }
+
+button:hover{
+    opacity:0.9;
+}
+
+/* LINK */
+a{
+    display:block;
+    text-align:center;
+    margin-top:12px;
+    color:#38bdf8;
+    text-decoration:none;
+}
+
+a:hover{
+    text-decoration:underline;
+}
+
+/* FLASH MESSAGE */
+.flash{
+    background:#22c55e;
+    color:black;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:10px;
+    text-align:center;
+    font-size:14px;
+}
+
+/* SMALL TEXT */
+small{
+    color:#94a3b8;
+    display:block;
+    text-align:center;
+    margin-top:10px;
+}
+
+/* HINT */
+.hint{
+    font-size:12px;
+    color:#94a3b8;
+    margin-top:-5px;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="box">
-<h2>Register</h2>
+
+<h2>🚀 Create Account</h2>
+
+<!-- FLASH MESSAGES -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="flash">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+{% endwith %}
 
 <form method="POST">
 
     <input name="username" placeholder="Username" required>
+
+    <input name="email" type="email" placeholder="Email" required>
+
+    <input name="phone" placeholder="Phone Number">
+
     <input name="password" type="password" placeholder="Password" required>
+
+    <div class="hint">Password should be at least 4 characters</div>
 
     <select name="role">
         <option value="buyer">Buyer</option>
         <option value="seller">Seller</option>
     </select>
 
-    <button>Create Account</button>
+    <button type="submit">Create Account</button>
+
 </form>
 
-<p><a href="/login">Already have account?</a></p>
+<a href="/login">Already have an account? Login</a>
+
+<small>METMC Digital Store</small>
+
 </div>
 
 </body>

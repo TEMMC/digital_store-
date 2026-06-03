@@ -1,27 +1,276 @@
 {% extends "base.html" %}
+
 {% block content %}
 
-<h2>Seller Dashboard</h2>
+<style>
 
-{% for p in products %}
-<div class="card">
+.dashboard-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    margin-bottom:25px;
+}
 
-    <h3>{{ p.name }}</h3>
+.dashboard-header h2{
+    margin:0;
+}
 
-    <p>
-        {% if p.is_free %}
-            FREE
-        {% else %}
-            ${{ p.price }}
-        {% endif %}
-    </p>
+.upload-btn{
+    background:#38bdf8;
+    color:black;
+    padding:10px 16px;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:bold;
+}
 
-    <p>Downloads: {{ p.downloads }}</p>
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+    margin-bottom:30px;
+}
 
-    <a class="btn" href="/edit/{{ p.id }}">Edit</a>
-    <a class="btn" href="/delete/{{ p.id }}">Delete</a>
+.stat-card{
+    background:#1e293b;
+    padding:20px;
+    border-radius:15px;
+    text-align:center;
+}
+
+.stat-card h3{
+    font-size:30px;
+    margin:10px 0;
+}
+
+.products-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:20px;
+}
+
+.product-card{
+    background:#1e293b;
+    border-radius:15px;
+    overflow:hidden;
+    transition:.3s;
+}
+
+.product-card:hover{
+    transform:translateY(-5px);
+}
+
+.product-card img{
+    width:100%;
+    height:200px;
+    object-fit:cover;
+}
+
+.product-content{
+    padding:15px;
+}
+
+.product-content h3{
+    margin-bottom:10px;
+}
+
+.product-content p{
+    color:#cbd5e1;
+    margin-bottom:10px;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 10px;
+    border-radius:20px;
+    font-size:12px;
+    margin-bottom:10px;
+}
+
+.free{
+    background:#22c55e;
+    color:white;
+}
+
+.paid{
+    background:#f59e0b;
+    color:black;
+}
+
+.featured{
+    background:gold;
+    color:black;
+}
+
+.stats{
+    display:flex;
+    justify-content:space-between;
+    color:#94a3b8;
+    margin-top:10px;
+}
+
+.actions{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+.edit-btn{
+    flex:1;
+    text-align:center;
+    background:#38bdf8;
+    color:black;
+    text-decoration:none;
+    padding:10px;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.delete-btn{
+    flex:1;
+    text-align:center;
+    background:#ef4444;
+    color:white;
+    text-decoration:none;
+    padding:10px;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.empty{
+    text-align:center;
+    padding:50px;
+}
+
+</style>
+
+<div class="dashboard-header">
+
+    <div>
+        <h2>📊 Seller Dashboard</h2>
+        <p>Manage your products and track performance.</p>
+    </div>
+
+    <a href="/add" class="upload-btn">
+        ➕ Upload Product
+    </a>
 
 </div>
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <p>Total Products</p>
+        <h3>{{ products|length }}</h3>
+    </div>
+
+    <div class="stat-card">
+        <p>Total Downloads</p>
+        <h3>
+            {{ products|sum(attribute='downloads') }}
+        </h3>
+    </div>
+
+    <div class="stat-card">
+        <p>Total Views</p>
+        <h3>
+            {{ products|sum(attribute='views') }}
+        </h3>
+    </div>
+
+</div>
+
+{% if products %}
+
+<div class="products-grid">
+
+{% for p in products %}
+
+<div class="product-card">
+
+    {% if p.image_path %}
+        <img src="{{ p.image_path }}">
+    {% else %}
+        <img src="https://via.placeholder.com/600x400?text=No+Image">
+    {% endif %}
+
+    <div class="product-content">
+
+        <h3>{{ p.name }}</h3>
+
+        <p>
+            {{ p.description[:100] }}
+            {% if p.description and p.description|length > 100 %}
+            ...
+            {% endif %}
+        </p>
+
+        {% if p.is_free %}
+            <span class="badge free">FREE</span>
+        {% else %}
+            <span class="badge paid">${{ p.price }}</span>
+        {% endif %}
+
+        {% if p.featured %}
+            <span class="badge featured">
+                ⭐ Featured
+            </span>
+        {% endif %}
+
+        <div class="stats">
+            <span>👀 {{ p.views }}</span>
+            <span>⬇ {{ p.downloads }}</span>
+        </div>
+
+        <div class="stats">
+            <span>⭐ {{ p.rating }}</span>
+            <span>{{ p.rating_count }} reviews</span>
+        </div>
+
+        <div class="actions">
+
+            <a
+            href="/edit/{{ p.id }}"
+            class="edit-btn">
+            ✏ Edit
+            </a>
+
+            <a
+            href="/delete/{{ p.id }}"
+            class="delete-btn"
+            onclick="return confirm('Delete this product?')">
+            🗑 Delete
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
 {% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="empty">
+
+    <h3>No products uploaded yet</h3>
+
+    <p>
+        Start selling by uploading your first product.
+    </p>
+
+    <br>
+
+    <a href="/add" class="upload-btn">
+        Upload First Product
+    </a>
+
+</div>
+
+{% endif %}
 
 {% endblock %}

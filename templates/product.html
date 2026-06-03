@@ -1,28 +1,154 @@
-{% extends "base.html" %}
-{% block content %}
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{ product.name }} - METMC</title><style>
 
-<div class="card">
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
 
-<h2>{{ product.name }}</h2>
+body{
+    background:#0f172a;
+    color:white;
+}
 
-{% if product.image %}
-<img src="{{ url_for('static', filename='products/' + product.image) }}" width="200">
+/* HEADER */
+header{
+    background:#111827;
+    padding:15px 25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #1e293b;
+}
+
+a{
+    color:#38bdf8;
+    text-decoration:none;
+}
+
+/* CONTAINER */
+.container{
+    max-width:900px;
+    margin:30px auto;
+    padding:20px;
+}
+
+/* PRODUCT CARD */
+.card{
+    background:#111827;
+    border:1px solid #1e293b;
+    border-radius:15px;
+    overflow:hidden;
+}
+
+/* IMAGE */
+.card img{
+    width:100%;
+    max-height:400px;
+    object-fit:cover;
+    background:#0b1220;
+}
+
+/* CONTENT */
+.content{
+    padding:20px;
+}
+
+h2{
+    margin-bottom:10px;
+}
+
+p{
+    color:#cbd5e1;
+    margin:10px 0;
+    line-height:1.5;
+}
+
+/* BADGES */
+.badge{
+    display:inline-block;
+    padding:6px 12px;
+    border-radius:20px;
+    background:#1e293b;
+    font-size:13px;
+    margin-right:5px;
+}
+
+.free{
+    color:#22c55e;
+    font-weight:bold;
+}
+
+.price{
+    font-size:22px;
+    font-weight:bold;
+    color:#38bdf8;
+}
+
+/* STATS */
+.stats{
+    display:flex;
+    gap:15px;
+    margin:15px 0;
+    color:#94a3b8;
+}
+
+/* BUTTON */
+.btn{
+    display:block;
+    text-align:center;
+    background:#38bdf8;
+    color:black;
+    padding:12px;
+    border-radius:10px;
+    font-weight:bold;
+    margin-top:15px;
+}
+
+.btn:hover{
+    opacity:0.9;
+}
+
+/* BACK */
+.back{
+    margin:20px;
+    display:inline-block;
+}
+
+</style></head><body><header>
+    <div><b>METMC Digital Store</b></div><div>
+    <a href="/">🏠 Home</a>
+</div>
+
+</header><div class="container"><a class="back" href="/">← Back to Marketplace</a>
+
+<div class="card">{% if product.image_path %}
+<img src="{{ product.image_path }}">
+{% else %}
+<img src="https://via.placeholder.com/900x400?text=No+Preview">
 {% endif %}
 
-<p>{{ product.description }}</p>
+<div class="content"><h2>{{ product.name }}</h2><div class="badge">{{ product.category }}</div>{% if product.featured %}
 
-<p>
+<div class="badge">⭐ Featured</div>
+{% endif %}<p>{{ product.description }}</p><div class="stats">
+<span>👀 {{ product.views }} views</span>
+<span>⬇ {{ product.downloads }} downloads</span>
+</div><p>
 {% if product.is_free %}
 <span class="free">FREE</span>
 {% else %}
 <span class="price">${{ product.price }}</span>
 {% endif %}
-</p>
-
-<p>Downloads: {{ product.downloads }}</p>
-
-<a class="btn" href="/download/{{ product.id }}">Download Now</a>
-
-</div>
-
-{% endblock %}
+</p><a class="btn" href="/download/{{ product.id }}">
+{% if product.is_free %}
+⬇ Download Now
+{% else %}
+💳 Buy Now
+{% endif %}
+</a></div></div></div></body>
+</html>

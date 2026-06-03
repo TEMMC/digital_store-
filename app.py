@@ -25,11 +25,9 @@ app.secret_key = os.getenv(
 "change-this-secret-key"
 )
 
-=====================
-
-SUPABASE STORAGE
-
-=====================
+# =====================
+# SUPABASE STORAGE
+# =====================
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
@@ -38,27 +36,21 @@ supabase = None
 
 if SUPABASE_URL and SUPABASE_KEY:
 
-try:
+    try:
+        supabase = create_client(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        )
 
-    supabase = create_client(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    )
-
-except Exception as e:
-
-    print(
-        "Supabase connection failed:",
-        str(e)
-    )
+    except Exception as e:
+        print("Supabase connection failed:", str(e))
 
 BUCKET_NAME = "products"
+#=====================
 
-=====================
+#DATABASE
 
-DATABASE
-
-=====================
+#=====================
 
 DATABASE_URL = os.getenv(
 "DATABASE_URL",
@@ -79,11 +71,11 @@ app.config[
 
 db = SQLAlchemy(app)
 
-=====================
+#=====================
 
-UPLOADS
+#UPLOADS
 
-=====================
+#=====================
 
 UPLOAD_FOLDER = os.environ.get(
 "UPLOAD_FOLDER",
@@ -102,11 +94,11 @@ app.config[
 "UPLOAD_FOLDER"
 ] = UPLOAD_FOLDER
 
-=====================
+#=====================
 
-MARKETPLACE SETTINGS
+#MARKETPLACE SETTINGS
 
-=====================
+#=====================
 
 MARKETPLACE_NAME = (
 "METMC Digital Store"
@@ -136,244 +128,46 @@ DEFAULT_CATEGORIES = [
 
 ]
 
-=====================
-
-SUPABASE HELPERS
-
-=====================
+# =====================
+# SUPABASE HELPERS
+# =====================
 
 def supabase_enabled():
+    return supabase is not None
 
-return (
-    supabase is not None
-)
 
-def generate_filename(
-filename
-):
+def generate_filename(filename):
+    return f"{uuid.uuid4()}_{secure_filename(filename)}"
 
-return (
-    f"{uuid.uuid4()}_"
-    f"{secure_filename(filename)}"
-)
 
-def public_file_url(
-filename
-):
-
-return (
-    f"{SUPABASE_URL}"
-    f"/storage/v1/object/public/"
-    f"{BUCKET_NAME}/"
-    f"{filename}"
-)
-
-def upload_to_supabase(
-file_object
-):
-
-if not supabase_enabled():
-    return None, None
-
-filename = generate_filename(
-    file_object.filename
-)
-
-supabase.storage.from_(
-    BUCKET_NAME
-).upload(
-    filename,
-    file_object.read(),
-    {
-        "content-type":
-        file_object.content_type
-    }
-)
-
-return (
-    filename,
-    public_file_url(filename)
-)
-# =====================
-# MODELS
-# =====================
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-
-    username = db.Column(
-        db.String(100),
-        unique=True,
-        nullable=False
-    )
-
-    email = db.Column(
-        db.String(200),
-        unique=True
-    )
-
-    phone = db.Column(
-        db.String(50)
-    )
-
-    profile_image = db.Column(
-        db.String(500)
-    )
-
-    password = db.Column(
-        db.String(300),
-        nullable=False
-    )
-
-    role = db.Column(
-        db.String(20),
-        default="buyer"
-    )
-
-    created_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow
+def public_file_url(filename):
+    return (
+        f"{SUPABASE_URL}"
+        f"/storage/v1/object/public/"
+        f"{BUCKET_NAME}/"
+        f"{filename}"
     )
 
 
-class Product(db.Model):
+def upload_to_supabase(file_object):
+    """
+    Upload file to Supabase Storage and return:
+    (filename, public_url)
+    """
 
-    id = db.Column(
-        db.Integer,
-        primary_key=True
+    if not supabase_enabled():
+        return None, None
+
+    filename = generate_filename(file_object.filename)
+    file_bytes = file_object.read()
+
+    supabase.storage.from_(BUCKET_NAME).upload(
+        filename,
+        file_bytes,
+        {"content-type": file_object.content_type}
     )
 
-    name = db.Column(
-        db.String(100)
-    )
-
-    description = db.Column(
-        db.Text
-    )
-
-    price = db.Column(
-        db.Float,
-        default=0
-    )
-
-    is_free = db.Column(
-        db.Integer,
-        default=0
-    )
-
-    category = db.Column(
-        db.String(50)
-    )
-
-    seller = db.Column(
-        db.String(100)
-    )
-
-    file_path = db.Column(
-        db.String(500)
-    )
-
-    image_path = db.Column(
-        db.String(500)
-    )
-
-    views = db.Column(
-        db.Integer,
-        default=0
-    )
-
-    downloads = db.Column(
-        db.Integer,
-        default=0
-    )
-
-    created_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow
-    )
-
-
-class News(db.Model):
-
-    id = db.Column(
-        db.Integer,
-        primary_key=True
-    )
-
-    title = db.Column(
-        db.String(300)
-    )
-
-    content = db.Column(
-        db.Text
-    )
-
-    created_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow
-    )
-
-
-class Message(db.Model):
-
-    id = db.Column(
-        db.Integer,
-        primary_key=True
-    )
-
-    sender = db.Column(
-        db.String(100)
-    )
-
-    receiver = db.Column(
-        db.String(100)
-    )
-
-    message = db.Column(
-        db.Text
-    )
-
-    is_read = db.Column(
-        db.Integer,
-        default=0
-    )
-
-    created_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow
-    )
-
-
-class DownloadLog(db.Model):
-
-    id = db.Column(
-        db.Integer,
-        primary_key=True
-    )
-
-    username = db.Column(
-        db.String(100)
-    )
-
-    product_id = db.Column(
-        db.Integer
-    )
-
-    created_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow
-    )
-    # =====================
-# HEALTH CHECK
-# =====================
-
-@app.route("/health")
-def health():
-
-    return {
-        "status": "ok",
-        "products": Product.query.count()
-    }
+    return filename, public_file_url(filename)
 
 # =====================
 # UPLOADS ROUTE
@@ -386,7 +180,87 @@ def uploaded_file(filename):
         app.config["UPLOAD_FOLDER"],
         filename
     )
+# =====================
+# MODELS
+# =====================
 
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    email = db.Column(db.String(200), unique=True, nullable=False)
+    phone = db.Column(db.String(50))
+    password = db.Column(db.String(300), nullable=False)
+    role = db.Column(db.String(20), default="buyer")
+
+    bio = db.Column(db.Text)
+    country = db.Column(db.String(100))
+    profile_image = db.Column(db.String(500))
+    verified = db.Column(db.Integer, default=0)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    price = db.Column(db.Float, default=0)
+    is_free = db.Column(db.Integer, default=0)
+
+    category = db.Column(db.String(100))
+    seller = db.Column(db.String(100))
+
+    file_path = db.Column(db.String(1000))
+    image_path = db.Column(db.String(1000))
+
+    supabase_file = db.Column(db.String(500))
+    supabase_image = db.Column(db.String(500))
+
+    views = db.Column(db.Integer, default=0)
+    downloads = db.Column(db.Integer, default=0)
+
+    rating = db.Column(db.Float, default=0)
+    rating_count = db.Column(db.Integer, default=0)
+
+    featured = db.Column(db.Integer, default=0)
+    approved = db.Column(db.Integer, default=1)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class News(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(300))
+    content = db.Column(db.Text)
+    image = db.Column(db.String(500))
+    author = db.Column(db.String(100))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender = db.Column(db.String(100))
+    receiver = db.Column(db.String(100))
+    message = db.Column(db.Text)
+    is_read = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100))
+    title = db.Column(db.String(300))
+    message = db.Column(db.Text)
+    is_read = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class DownloadLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100))
+    product_id = db.Column(db.Integer)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 # =====================
 # HOME
 # =====================
@@ -397,128 +271,111 @@ def home():
     category = request.args.get("category")
     search = request.args.get("search")
 
-    products = Product.query
+    products = Product.query.filter_by(approved=1)
 
     if category:
-        products = products.filter_by(
-            category=category
-        )
+        products = products.filter_by(category=category)
 
     if search:
-        products = products.filter(
-            Product.name.contains(search)
-        )
+        products = products.filter(Product.name.contains(search))
 
     products = products.all()
 
-    categories = [
-        "Apps",
-        "Games",
-        "Documents",
-        "Music",
-        "Videos",
-        "Ebooks",
-        "Scripts",
-        "Templates",
-        "Courses",
-        "AI Tools"
-    ]
+    categories = DEFAULT_CATEGORIES
 
     return render_template(
         "index.html",
         products=products,
         categories=categories
     )
-#=====================
-
-#REGISTER (UPGRADED)
-
-#=====================
+# =====================
+# REGISTER
+# =====================
+# =====================
+# REGISTER
+# =====================
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
-if request.method == "POST":
+    if request.method == "POST":
 
-    username = request.form["username"].strip()
-    email = request.form["email"].strip()
-    phone = request.form["phone"].strip()
-    password = request.form["password"]
-    role = request.form["role"]
+        # SAFE FORM ACCESS (prevents KeyError crashes)
+        username = request.form.get("username", "").strip()
+        email = request.form.get("email", "").strip()
+        phone = request.form.get("phone", "").strip()
+        password = request.form.get("password", "")
+        role = request.form.get("role", "buyer")
 
-    existing_user = User.query.filter_by(
-        username=username
-    ).first()
+        # =====================
+        # VALIDATION
+        # =====================
+        if not username or not email or not password:
+            flash("Please fill all required fields")
+            return redirect("/register")
 
-    if existing_user:
-        flash("Username already exists")
-        return redirect("/register")
+        if len(password) < 4:
+            flash("Password too short")
+            return redirect("/register")
 
-    existing_email = User.query.filter_by(
-        email=email
-    ).first()
+        # =====================
+        # CHECK DUPLICATES
+        # =====================
+        if User.query.filter_by(username=username).first():
+            flash("Username already exists")
+            return redirect("/register")
 
-    if existing_email:
-        flash("Email already exists")
-        return redirect("/register")
+        if User.query.filter_by(email=email).first():
+            flash("Email already exists")
+            return redirect("/register")
 
-    hashed_password = generate_password_hash(
-        password
-    )
+        # =====================
+        # CREATE USER
+        # =====================
+        user = User(
+            username=username,
+            email=email,
+            phone=phone,
+            password=generate_password_hash(password),
+            role=role
+        )
 
-    user = User(
-        username=username,
-        email=email,
-        phone=phone,
-        password=hashed_password,
-        role=role
-    )
+        db.session.add(user)
+        db.session.commit()
 
-    db.session.add(user)
-    db.session.commit()
+        flash("Account created successfully")
+        return redirect("/login")
 
-    flash("Account created successfully")
+    return render_template("register.html")
 
-    return redirect("/login")
 
-return render_template("register.html")
-
-#=====================
-
-#LOGIN (UPGRADED)
-
-#=====================
+# =====================
+# LOGIN
+# =====================
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
-if request.method == "POST":
+    if request.method == "POST":
 
-    username = request.form["username"]
-    password = request.form["password"]
+        username = request.form["username"]
+        password = request.form["password"]
 
-    user = User.query.filter_by(
-        username=username
-    ).first()
+        user = User.query.filter_by(username=username).first()
 
-    if user and check_password_hash(
-        user.password,
-        password
-    ):
+        if user and check_password_hash(user.password, password):
 
-        session["user"] = user.username
-        session["role"] = user.role
-        session["user_id"] = user.id
+            session["user"] = user.username
+            session["role"] = user.role
+            session["user_id"] = user.id
 
-        flash("Login successful")
+            flash("Login successful")
+            return redirect("/")
 
-        return redirect("/")
+        flash("Invalid username or password")
+        return redirect("/login")
 
-    flash("Invalid username or password")
-
-    return redirect("/login")
-
-return render_template("login.html")
+    return render_template("login.html")
     # =====================
 # LOGOUT
 # =====================
@@ -530,7 +387,6 @@ def logout():
 
     flash("Logged out")
     return redirect("/")
-
 
 # =====================
 # ADD PRODUCT (SELLER ONLY + SUPABASE UPLOAD)
@@ -553,7 +409,7 @@ def add():
         image = request.files.get("image")
 
         # =====================
-        # UPLOAD PRODUCT FILE TO SUPABASE
+        # UPLOAD PRODUCT FILE
         # =====================
 
         file_name = f"{uuid.uuid4()}_{secure_filename(file.filename)}"
@@ -570,12 +426,12 @@ def add():
         ).get_public_url(file_name)
 
         # =====================
-        # UPLOAD IMAGE TO SUPABASE
+        # UPLOAD IMAGE
         # =====================
 
         image_path = None
 
-        if image and image.filename:
+        if image and image.filename and supabase_enabled():
 
             image_name = f"{uuid.uuid4()}_{secure_filename(image.filename)}"
             image_bytes = image.read()
@@ -591,7 +447,7 @@ def add():
             ).get_public_url(image_name)
 
         # =====================
-        # SAVE PRODUCT TO DB
+        # SAVE TO DATABASE
         # =====================
 
         product = Product(
@@ -613,7 +469,6 @@ def add():
 
     return render_template("add.html")
 
-
 # =====================
 # VIEW SINGLE PRODUCT
 # =====================
@@ -626,10 +481,10 @@ def product(product_id):
     if not product:
         return "Product not found"
 
-    return render_template(
-        "product.html",
-        product=product
-    )
+    product.views = (product.views or 0) + 1
+    db.session.commit()
+
+    return render_template("product.html", product=product)
     # =====================
 # DOWNLOAD PRODUCT
 # =====================
