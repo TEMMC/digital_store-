@@ -398,11 +398,11 @@ def add():
     if session.get("role") != "seller":
         return "Access denied (seller only)"
 
-    if request.method == "POST":
-
     if not supabase_enabled():
         return "Supabase is not configured"
-        
+
+    if request.method == "POST":
+
         is_free = request.form.get("is_free") == "on"
 
         file = request.files["file"]
