@@ -46,31 +46,28 @@ if SUPABASE_URL and SUPABASE_KEY:
         print("Supabase connection failed:", str(e))
 
 BUCKET_NAME = "products"
-#=====================
+# =====================
+# DATABASE
+# =====================
 
-#DATABASE
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-#=====================
+# Render/Supabase PostgreSQL URLs sometimes start with postgres://
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgres://",
+        "postgresql://",
+        1
+    )
 
-DATABASE_URL = os.getenv(
-"DATABASE_URL",
-"sqlite:///store.db"
-)
+# Fallback for local Termux testing
+if not DATABASE_URL:
+    DATABASE_URL = "sqlite:///store.db"
 
-app.config[
-"SQLALCHEMY_DATABASE_URI"
-] = DATABASE_URL
-
-app.config[
-"SQLALCHEMY_TRACK_MODIFICATIONS"
-] = False
-
-app.config[
-"MAX_CONTENT_LENGTH"
-] = 500 * 1024 * 1024
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
-
 #=====================
 
 #UPLOADS
@@ -403,6 +400,9 @@ def add():
 
     if request.method == "POST":
 
+    if not supabase_enabled():
+        return "Supabase is not configured"
+        
         is_free = request.form.get("is_free") == "on"
 
         file = request.files["file"]
@@ -542,7 +542,17 @@ def delete(product_id):
 with app.app_context():
     db.create_all()
 
+# =====================
+# DEBUG ROUTES
+# =====================
 
+@app.route("/debug")
+def debug():
+    return f"Products: {Product.query.count()}"
+
+@app.route("/dbinfo")
+def dbinfo():
+    return app.config["SQLALCHEMY_DATABASE_URI"]
 # =====================
 # RUN APP
 # =====================
