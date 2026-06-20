@@ -1,174 +1,263 @@
-<!DOCTYPE html><html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Add Product - METMC</title><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, sans-serif;
-}
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-body{
-    background:#0f172a;
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-    min-height:100vh;
-    padding:20px;
-}
+<title>
+    Add Product - METMC Digital Store
+</title>
 
-/* CONTAINER */
-.box{
-    width:100%;
-    max-width:700px;
-    background:#111827;
-    padding:25px;
-    border-radius:15px;
-    border:1px solid #1e293b;
-}
+<style>
 
-/* TITLE */
-h2{
-    text-align:center;
-    margin-bottom:20px;
-    color:#38bdf8;
-}
+    body {
 
-/* INPUTS */
-input, select, textarea{
-    width:100%;
-    padding:12px;
-    margin:8px 0;
-    border-radius:10px;
-    border:none;
-    background:#1e293b;
-    color:white;
-}
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
 
-textarea{
-    min-height:100px;
-    resize:none;
-}
+        max-width: 900px;
 
-/* LABEL */
-label{
-    display:block;
-    margin-top:10px;
-    margin-bottom:5px;
-    color:#cbd5e1;
-    font-size:14px;
-}
+        margin: auto;
+        padding: 20px;
 
-/* GRID */
-.grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-}
+    }
 
-/* CHECKBOX */
-.check{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin:10px 0;
-}
+    .container {
 
-/* BUTTON */
-button{
-    width:100%;
-    padding:14px;
-    border:none;
-    border-radius:10px;
-    background:#38bdf8;
-    color:black;
-    font-weight:bold;
-    cursor:pointer;
-    margin-top:15px;
-}
+        background: white;
 
-button:hover{
-    opacity:0.9;
-}
+        padding: 20px;
 
-/* SECTION */
-.section{
-    margin-top:20px;
-    padding-top:10px;
-    border-top:1px solid #1e293b;
-}
+        border-radius: 10px;
 
-small{
-    color:#94a3b8;
-}
+    }
 
-</style></head><body><div class="box"><h2>🚀 Upload New Product</h2><form method="POST" enctype="multipart/form-data"><!-- BASIC INFO --><label>Product Name</label>
-<input name="name" placeholder="e.g AI Chatbot App" required>
+    h1 {
 
-<label>Description</label>
+        text-align: center;
 
-<textarea name="description" placeholder="Describe your product..."></textarea><div class="grid"><div>
-<label>Price ($)</label>
-<input name="price" type="number" step="0.01">
-</div><div>
-<label>Category</label>
-<select name="category" required>
-    <option value="">Select Category</option>
-    {% for c in [
-        "Apps","Games","Documents","Music","Videos","Ebooks",
-        "Scripts","Templates","Courses","AI Tools","Graphics",
-        "Themes","Plugins","Source Code","Business","Education"
-    ] %}
-        <option value="{{ c }}">{{ c }}</option>
-    {% endfor %}
-</select>
-</div></div><div class="check">
-<input type="checkbox" name="is_free">
-<label>Make this a FREE product</label>
-</div><!-- FILES --><div class="section">
-<h3>📦 Product Files</h3>
-<small>Upload your main product file (zip, apk, pdf, etc.)</small>
-<input type="file" name="file" required>
-</div><div class="section">
-<h3>🖼️ Product Image</h3>
-<small>Thumbnail shown on marketplace</small>
-<input type="file" name="image">
-</div><!-- ADVANCED --><div class="section">
-<h3>⚙️ Advanced Options</h3><label>Tags</label>
-<input name="tags" placeholder="ai, python, flask">
+    }
 
-<label>Version</label>
-<input name="version" placeholder="v1.0">
+    label {
 
-<label>Demo Link</label>
-<input name="demo_link" placeholder="https://">
+        display: block;
 
-<label>Platform</label>
-<select name="platform">
-<option>Web</option>
-<option>Android</option>
-<option>Windows</option>
-<option>Linux</option>
-<option>Cross Platform</option>
-</select>
+        margin-top: 15px;
 
-<label>License</label>
-<select name="license">
-<option>Personal</option>
-<option>Commercial</option>
-<option>Open Source</option>
-</select>
+        font-weight: bold;
 
-<div class="check">
-<input type="checkbox" name="featured">
-<label>⭐ Mark as Featured</label>
-</div><div class="check">
-<input type="checkbox" name="trending">
-<label>🔥 Trending Product</label>
-</div></div><button type="submit">Upload Product 🚀</button>
+    }
 
-</form></div></body>
-</html>
+    input,
+    textarea,
+    select {
+
+        width: 100%;
+
+        padding: 12px;
+
+        margin-top: 5px;
+
+        border: 1px solid #ccc;
+
+        border-radius: 5px;
+
+        box-sizing: border-box;
+
+    }
+
+    textarea {
+
+        resize: vertical;
+
+    }
+
+    .flash {
+
+        background: #fff3cd;
+
+        color: #856404;
+
+        padding: 10px;
+
+        border-radius: 5px;
+
+        margin-bottom: 15px;
+
+    }
+
+    .btn {
+
+        width: 100%;
+
+        padding: 15px;
+
+        margin-top: 20px;
+
+        border: none;
+
+        border-radius: 5px;
+
+        cursor: pointer;
+
+        font-size: 16px;
+
+        background: #007bff;
+
+        color: white;
+
+    }
+
+</style>
+
+</head><body><div class="container"><h1>
+    Add Product
+</h1>
+
+<!-- ===================== -->
+<!-- FLASH MESSAGES -->
+<!-- ===================== -->
+
+{% with messages = get_flashed_messages() %}
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div class="flash">
+
+                {{ message }}
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+{% endwith %}
+
+<!-- ===================== -->
+<!-- ADD PRODUCT FORM -->
+<!-- ===================== -->
+
+<form method="POST">
+
+    <label>
+        Product Name
+    </label>
+
+    <input
+        type="text"
+        name="name"
+        required
+    >
+
+    <label>
+        Description
+    </label>
+
+    <textarea
+        name="description"
+        rows="6"
+    ></textarea>
+
+    <label>
+        Category
+    </label>
+
+    <select name="category">
+
+        <option value="Apps">Apps</option>
+
+        <option value="Games">Games</option>
+
+        <option value="Documents">Documents</option>
+
+        <option value="Music">Music</option>
+
+        <option value="Videos">Videos</option>
+
+        <option value="Ebooks">Ebooks</option>
+
+        <option value="Scripts">Scripts</option>
+
+        <option value="Templates">Templates</option>
+
+        <option value="Courses">Courses</option>
+
+        <option value="AI Tools">AI Tools</option>
+
+        <option value="Graphics">Graphics</option>
+
+        <option value="Themes">Themes</option>
+
+        <option value="Plugins">Plugins</option>
+
+        <option value="Source Code">Source Code</option>
+
+        <option value="Education">Education</option>
+
+        <option value="Business">Business</option>
+
+        <option value="News">News</option>
+
+    </select>
+
+    <label>
+        Price
+    </label>
+
+    <input
+        type="number"
+        step="0.01"
+        min="0"
+        name="price"
+        value="0"
+    >
+
+    <br>
+
+    <input
+        type="checkbox"
+        name="is_free"
+        id="is_free"
+    >
+
+    <label for="is_free">
+
+        Free Product
+
+    </label>
+
+    <label>
+        Product Download URL
+    </label>
+
+    <input
+        type="url"
+        name="file_url"
+        placeholder="https://example.com/file.zip"
+        required
+    >
+
+    <label>
+        Product Image URL
+    </label>
+
+    <input
+        type="url"
+        name="image_url"
+        placeholder="https://example.com/image.jpg"
+    >
+
+    <button
+        type="submit"
+        class="btn"
+    >
+        Add Product
+    </button>
+
+</form>
+
+</div></body></html>

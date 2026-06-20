@@ -1,235 +1,247 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>METMC Digital Store</title>
-
-<style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{ MARKETPLACE_NAME if MARKETPLACE_NAME else "METMC Digital Store" }}</title><style>
 
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+margin:0;
+padding:0;
+box-sizing:border-box;
 }
 
 body{
-    background:#0f172a;
-    color:white;
-    font-family:Arial, sans-serif;
+background:#0f172a;
+color:white;
+font-family:Arial,sans-serif;
 }
 
 header{
-    background:#111827;
-    padding:15px 25px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    border-bottom:1px solid #1e293b;
+background:#111827;
+padding:15px 25px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+flex-wrap:wrap;
+border-bottom:1px solid #1e293b;
 }
 
 .logo{
-    font-size:22px;
-    font-weight:bold;
-    color:#38bdf8;
+font-size:24px;
+font-weight:bold;
+color:#38bdf8;
 }
 
 nav{
-    display:flex;
-    gap:15px;
-    align-items:center;
+display:flex;
+gap:15px;
+align-items:center;
 }
 
 nav a{
-    color:white;
-    text-decoration:none;
+color:white;
+text-decoration:none;
 }
 
 .btn{
-    background:#38bdf8;
-    color:black;
-    padding:8px 15px;
-    border-radius:8px;
-    text-decoration:none;
-    font-weight:bold;
+background:#38bdf8;
+color:black;
+padding:8px 15px;
+border-radius:8px;
+text-decoration:none;
+font-weight:bold;
 }
 
 .hero{
-    text-align:center;
-    padding:60px 20px;
+text-align:center;
+padding:60px 20px;
 }
 
 .hero h1{
-    font-size:40px;
-    margin-bottom:10px;
+font-size:42px;
+margin-bottom:10px;
 }
 
 .hero p{
-    color:#cbd5e1;
+color:#cbd5e1;
 }
 
 .search-box{
-    max-width:800px;
-    margin:20px auto;
-    display:flex;
-    gap:10px;
+max-width:800px;
+margin:25px auto;
+display:flex;
+gap:10px;
 }
 
 .search-box input{
-    flex:1;
-    padding:12px;
-    border:none;
-    border-radius:10px;
+flex:1;
+padding:12px;
+border:none;
+border-radius:10px;
 }
 
 .search-box button{
-    background:#38bdf8;
-    border:none;
-    padding:12px 20px;
-    border-radius:10px;
-    font-weight:bold;
-    cursor:pointer;
+background:#38bdf8;
+border:none;
+padding:12px 20px;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
 }
 
 .categories{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    justify-content:center;
-    margin:20px;
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+justify-content:center;
+padding:20px;
 }
 
 .categories a{
-    text-decoration:none;
-    color:white;
-    background:#1e293b;
-    padding:8px 14px;
-    border-radius:20px;
+background:#1e293b;
+color:white;
+text-decoration:none;
+padding:8px 14px;
+border-radius:20px;
+transition:.3s;
 }
 
 .categories a:hover{
-    background:#38bdf8;
-    color:black;
+background:#38bdf8;
+color:black;
 }
 
 .products{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-    gap:20px;
-    padding:25px;
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+gap:20px;
+padding:25px;
 }
 
 .card{
-    background:#1e293b;
-    border-radius:15px;
-    overflow:hidden;
-    transition:.3s;
+background:#1e293b;
+border-radius:15px;
+overflow:hidden;
+transition:.3s;
+border:1px solid #334155;
 }
 
 .card:hover{
-    transform:translateY(-5px);
+transform:translateY(-5px);
 }
 
 .card img{
-    width:100%;
-    height:200px;
-    object-fit:cover;
+width:100%;
+height:220px;
+object-fit:cover;
 }
 
 .card-content{
-    padding:15px;
+padding:15px;
 }
 
 .card h3{
-    margin-bottom:10px;
+margin-bottom:10px;
 }
 
 .card p{
-    color:#cbd5e1;
-    margin-bottom:10px;
+color:#cbd5e1;
+line-height:1.5;
+margin-bottom:10px;
 }
 
 .badge{
-    display:inline-block;
-    padding:5px 10px;
-    border-radius:20px;
-    background:#334155;
-    font-size:12px;
-    margin-bottom:10px;
+display:inline-block;
+padding:5px 10px;
+border-radius:20px;
+background:#334155;
+font-size:12px;
+margin-bottom:8px;
 }
 
 .featured{
-    background:gold;
-    color:black;
+background:gold;
+color:black;
 }
 
 .price{
-    font-size:20px;
-    font-weight:bold;
-    margin:10px 0;
+font-size:22px;
+font-weight:bold;
+margin:10px 0;
 }
 
 .free{
-    color:#22c55e;
+color:#22c55e;
+}
+
+.meta{
+font-size:13px;
+color:#94a3b8;
+margin-bottom:10px;
 }
 
 .stats{
-    display:flex;
-    justify-content:space-between;
-    color:#94a3b8;
-    margin:10px 0;
-    font-size:14px;
+display:flex;
+justify-content:space-between;
+font-size:14px;
+color:#94a3b8;
+margin:10px 0;
 }
 
 .view-btn{
-    display:block;
-    text-align:center;
-    text-decoration:none;
-    background:#38bdf8;
-    color:black;
-    padding:10px;
-    border-radius:10px;
-    font-weight:bold;
+display:block;
+text-align:center;
+background:#38bdf8;
+color:black;
+padding:10px;
+border-radius:10px;
+text-decoration:none;
+font-weight:bold;
+margin-top:10px;
 }
 
-.empty{
-    text-align:center;
-    padding:50px;
-}
-
-footer{
-    margin-top:50px;
-    padding:30px;
-    text-align:center;
-    background:#111827;
-    color:#94a3b8;
+.delete-btn{
+display:block;
+width:100%;
+margin-top:8px;
+padding:10px;
+border:none;
+border-radius:10px;
+background:#ef4444;
+color:white;
+font-weight:bold;
+cursor:pointer;
 }
 
 .flash{
-    background:#22c55e;
-    color:white;
-    padding:12px;
-    margin:15px;
-    border-radius:10px;
-    text-align:center;
+background:#22c55e;
+padding:12px;
+margin:15px;
+border-radius:10px;
+text-align:center;
 }
 
-</style>
+.empty{
+text-align:center;
+padding:60px;
+}
 
-</head>
-<body>
+footer{
+margin-top:50px;
+padding:30px;
+text-align:center;
+background:#111827;
+color:#94a3b8;
+}
 
-<header>
+footer h4{
+margin-top:15px;
+color:white;
+}
 
-<div class="logo">
-METMC Digital Store
-</div>
-
-<nav>
-
-{% if session.get("user") %}
+</style></head>
+<body><header><div class="logo">
+🚀 METMC Digital Store
+</div><nav>{% if session.get("user") %}
 
 <span>👤 {{ session["user"] }}</span>
 
@@ -237,7 +249,7 @@ METMC Digital Store
 <a href="/add" class="btn">➕ Upload Product</a>
 {% endif %}
 
-<a href="/logout">🚪 Logout</a>
+<a href="/logout">Logout</a>
 
 {% else %}
 
@@ -246,49 +258,28 @@ METMC Digital Store
 
 {% endif %}
 
-</nav>
-
-</header>
-
-{% with messages = get_flashed_messages() %}
+</nav></header>{% with messages = get_flashed_messages() %}
 {% if messages %}
 {% for message in messages %}
+
 <div class="flash">
 {{ message }}
 </div>
 {% endfor %}
 {% endif %}
-{% endwith %}
-
-<section class="hero">
-
-<h1>🚀 Digital Marketplace</h1>
-
-<p>
-Apps, Games, Source Code, Courses,
-Ebooks, Templates and more.
-</p>
-
-<form method="GET" action="/" class="search-box">
-
-<input
+{% endwith %}<section class="hero"><h1>Digital Marketplace</h1><p>
+Apps • Games • Source Code • Courses • AI Tools • Templates • Ebooks
+</p><form method="GET" action="/" class="search-box"><input
 type="text"
 name="search"
 placeholder="Search products..."
 value="{{ request.args.get('search','') }}"
->
+
+«»
 
 <button type="submit">
 Search
-</button>
-
-</form>
-
-</section>
-
-<div class="categories">
-
-<a href="/">All</a>
+</button></form></section><div class="categories"><a href="/">All</a>
 
 {% for category in categories %}
 <a href="/?category={{ category }}">
@@ -296,103 +287,69 @@ Search
 </a>
 {% endfor %}
 
-</div>
+</div>{% if products %}
 
-{% if products %}
+<div class="products">{% for p in products %}
 
-<div class="products">
-
-{% for p in products %}
-
-<div class="card">
-
-{% if p.image_path %}
-<img src="{{ p.image_path }}">
+<div class="card">{% if p.image_path %}
+<img src="{{ p.image_path }}" alt="{{ p.name }}">
 {% else %}
-<img src="https://via.placeholder.com/400x250?text=No+Image">
+<img src="https://via.placeholder.com/500x300?text=No+Image">
 {% endif %}
 
-<div class="card-content">
+<div class="card-content">{% if p.featured %}
 
-<h3>{{ p.name }}</h3>
-
-<p>
-{{ p.description[:120] }}
-{% if p.description|length > 120 %}
-...
-{% endif %}
-</p>
-
-<div class="badge">
-{{ p.category }}
-</div>
-
-{% if p.featured %}
 <div class="badge featured">
 ⭐ Featured
 </div>
+{% endif %}<div class="badge">
+{{ p.category }}
+</div><h3>{{ p.name }}</h3><p>
+{{ (p.description or "No description available")[:120] }}
+{% if p.description and p.description|length > 120 %}
+...
 {% endif %}
-
-<div class="price">
-
-{% if p.is_free %}
+</p><div class="meta">
+👤 Seller: {{ p.seller }}
+</div><div class="meta">
+📅 {{ p.created_at.strftime('%d %b %Y') if p.created_at else '' }}
+</div><div class="price">{% if p.is_free %}
 <span class="free">FREE</span>
 {% else %}
-${{ p.price }}
+${{ "%.2f"|format(p.price) }}
 {% endif %}
 
-</div>
-
-<div class="stats">
+</div><div class="stats">
 <span>👀 {{ p.views }}</span>
 <span>⬇ {{ p.downloads }}</span>
-</div>
-
-<div class="stats">
+</div><div class="stats">
 <span>⭐ {{ p.rating }}</span>
-<span>({{ p.rating_count }})</span>
-</div>
-
-<a href="/product/{{ p.id }}" class="view-btn">
+<span>{{ p.rating_count }} ratings</span>
+</div><a href="/product/{{ p.id }}" class="view-btn">
 View Product
-</a>
+</a>{% if session.get("user") == p.seller %}
 
-</div>
+<form action="/delete/{{ p.id }}" method="POST"><button
+type="submit"
+class="delete-btn"
+onclick="return confirm('Delete this product?')">
+🗑 Delete
+</button>
 
-</div>
+</form>{% endif %}
 
-{% endfor %}
+</div></div>{% endfor %}
 
-</div>
+</div>{% else %}
 
-{% else %}
-
-<div class="empty">
-
-<h2>No products found</h2>
-
-<p>
+<div class="empty"><h2>No products found</h2><p>
 Try another search or category.
-</p>
+</p></div>{% endif %}
 
-</div>
-
-{% endif %}
-
-<footer>
-
-<h3>METMC Digital Store</h3>
-
-<p>Version 2.0</p>
-
-<br>
-
-<p>
+<footer><h3>METMC Digital Store</h3><p>Version 2.0</p><br><p>
 Customer Care:
 customercaremetmcmarketplace@gmail.com
-</p>
-
-</footer>
-
-</body>
+</p><h4>
+Made with ❤️ by Tinotenda Enock Mapfumo
+</h4></footer></body>
 </html>
