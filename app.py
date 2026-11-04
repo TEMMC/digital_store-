@@ -263,7 +263,7 @@ def login():
         flash("Invalid sign-in details.")
     return render_template("login.html")
 
-@app.route("/logout", methods=["GET", "POST"])
+@app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     flash("You have signed out.")
