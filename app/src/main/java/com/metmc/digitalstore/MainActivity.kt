@@ -78,7 +78,7 @@ class MainActivity : Activity() {
         }
         address = EditText(this).apply {
             hint = "Marketplace address (https://...)"
-            singleLine = true
+            setSingleLine(true)
             setTextColor(android.graphics.Color.WHITE)
             setHintTextColor(android.graphics.Color.GRAY)
             setPadding(14, 8, 14, 8)
