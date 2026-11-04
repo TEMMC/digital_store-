@@ -8,6 +8,8 @@ on:
       - "templates/**"
       - "static/**"
       - "app.py"
+      - "tests/**"
+      - "README-ANDROID.md"
       - "requirements.txt"
       - "*.gradle.kts"
       - "gradle.properties"
