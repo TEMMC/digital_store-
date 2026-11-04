@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{ MARKETPLACE_NAME if MARKETPLACE_NAME else "METMC Digital Store" }}</title><style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{ MARKETPLACE_NAME if MARKETPLACE_NAME else "MT Digital Store" }}</title><style>
 
 *{
 margin:0;
@@ -238,9 +238,10 @@ margin-top:15px;
 color:white;
 }
 
-</style></head>
+</style><link rel="stylesheet" href="/static/mt-future.css">
+</head>
 <body><header><div class="logo">
-🚀 METMC Digital Store
+🚀 MT Digital Store
 </div><nav>{% if session.get("user") %}
 
 <span>👤 {{ session["user"] }}</span>
@@ -346,9 +347,9 @@ onclick="return confirm('Delete this product?')">
 Try another search or category.
 </p></div>{% endif %}
 
-<footer><h3>METMC Digital Store</h3><p>Version 2.0</p><br><p>
+<footer><h3>MT Digital Store</h3><p>Version 2.0</p><br><p>
 Customer Care:
-customercaremetmcmarketplace@gmail.com
+customercareMTmarketplace@gmail.com
 </p><h4>
 Made with ❤️ by Tinotenda Enock Mapfumo
 </h4></footer></body>
