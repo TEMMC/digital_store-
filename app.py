@@ -92,6 +92,43 @@ class Review(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     __table_args__ = (db.UniqueConstraint("user_id", "product_id", name="uq_review_user_product"),)
 
+
+class SocialPost(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    body = db.Column(db.String(2000), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class DirectMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    body = db.Column(db.String(4000), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_read = db.Column(db.Integer, default=0)
+
+class MTGroupMember(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    group_name = db.Column(db.String(80), default="MT Group", nullable=False)
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+    __table_args__ = (db.UniqueConstraint("user_id", "group_name", name="uq_mt_group_member"),)
+
+class MTGroupMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    group_name = db.Column(db.String(80), default="MT Group", nullable=False)
+    body = db.Column(db.String(4000), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class CallRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    caller_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    call_type = db.Column(db.String(12), default="voice")
+    status = db.Column(db.String(20), default="requested")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False)
@@ -468,11 +505,113 @@ def notifications():
     db.session.commit()
     return render_template("notifications.html", notifications=items)
 
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route("/feed", methods=["GET", "POST"])
+@login_required
+def feed():
+    if request.method == "POST":
+        body = request.form.get("body", "").strip()
+        if not body or len(body) > 2000:
+            flash("Posts must contain 1–2,000 characters.")
+        else:
+            db.session.add(SocialPost(user_id=current_user().id, body=body))
+            db.session.commit()
+            flash("Your post is live.")
+        return redirect(url_for("feed"))
+    posts = SocialPost.query.order_by(SocialPost.created_at.desc()).limit(100).all()
+    authors = {u.id: u for u in User.query.filter(User.id.in_([p.user_id for p in posts])).all()} if posts else {}
+    return render_template("feed.html", posts=posts, authors=authors)
+
+@app.route("/messages")
+@login_required
+def messages():
+    uid = current_user().id
+    rows = DirectMessage.query.filter(db.or_(DirectMessage.sender_id == uid, DirectMessage.recipient_id == uid)).order_by(DirectMessage.created_at.desc()).limit(300).all()
+    ids = {m.sender_id if m.sender_id != uid else m.recipient_id for m in rows}
+    contacts = User.query.filter(User.id.in_(ids)).all() if ids else []
+    latest = {}
+    for m in rows:
+        other = m.sender_id if m.sender_id != uid else m.recipient_id
+        latest.setdefault(other, m)
+    contacts = sorted(contacts, key=lambda u: latest[u.id].created_at if u.id in latest else datetime.min, reverse=True)
+    unread = DirectMessage.query.filter_by(recipient_id=uid, is_read=0).count()
+    return render_template("messages.html", contacts=contacts, latest=latest, unread=unread)
+
+@app.route("/messages/<int:user_id>", methods=["GET", "POST"])
+@login_required
+def conversation(user_id):
+    other = db.get_or_404(User, user_id)
+    if other.id == current_user().id:
+        abort(400)
+    if request.method == "POST":
+        body = request.form.get("body", "").strip()
+        if not body or len(body) > 4000:
+            flash("Messages must contain 1–4,000 characters.")
+        else:
+            db.session.add(DirectMessage(sender_id=current_user().id, recipient_id=other.id, body=body))
+            notify(other.username, "New message", f"You received a message from {current_user().username}.")
+            db.session.commit()
+        return redirect(url_for("conversation", user_id=other.id))
+    uid = current_user().id
+    chat = DirectMessage.query.filter(db.or_(
+        db.and_(DirectMessage.sender_id == uid, DirectMessage.recipient_id == other.id),
+        db.and_(DirectMessage.sender_id == other.id, DirectMessage.recipient_id == uid)
+    )).order_by(DirectMessage.created_at.asc()).limit(300).all()
+    DirectMessage.query.filter_by(sender_id=other.id, recipient_id=uid, is_read=0).update({"is_read": 1})
+    db.session.commit()
+    return render_template("conversation.html", other=other, chat=chat)
+
+@app.route("/mt-group", methods=["GET", "POST"])
+@login_required
+def mt_group():
+    user = current_user()
+    member = MTGroupMember.query.filter_by(user_id=user.id, group_name="MT Group").first()
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "join" and not member:
+            db.session.add(MTGroupMember(user_id=user.id, group_name="MT Group"))
+            db.session.commit()
+            flash("Welcome to MT Group.")
+        elif action == "leave" and member:
+            db.session.delete(member)
+            db.session.commit()
+            flash("You left MT Group.")
+        elif action == "send" and member:
+            body = request.form.get("body", "").strip()
+            if body and len(body) <= 4000:
+                db.session.add(MTGroupMessage(user_id=user.id, group_name="MT Group", body=body))
+                db.session.commit()
+        return redirect(url_for("mt_group"))
+    chat = MTGroupMessage.query.filter_by(group_name="MT Group").order_by(MTGroupMessage.created_at.desc()).limit(150).all()
+    chat.reverse()
+    authors = {u.id: u for u in User.query.filter(User.id.in_([m.user_id for m in chat])).all()} if chat else {}
+    member_count = MTGroupMember.query.filter_by(group_name="MT Group").count()
+    return render_template("mt_group.html", member=member, chat=chat, authors=authors, member_count=member_count)
+
+@app.route("/call/<int:user_id>", methods=["POST"])
+@login_required
+def request_call(user_id):
+    other = db.get_or_404(User, user_id)
+    if other.id == current_user().id:
+        abort(400)
+    call_type = request.form.get("call_type", "voice")
+    if call_type not in ("voice", "video"):
+        call_type = "voice"
+    db.session.add(CallRequest(caller_id=current_user().id, recipient_id=other.id, call_type=call_type))
+    notify(other.username, "Call request", f"{current_user().username} is requesting a {call_type} call. Open MT Messages.")
+    db.session.commit()
+    flash("Call request sent. Live app-to-app audio/video requires a reachable peer and WebRTC signalling service; this offline local-only build cannot connect remote devices yet.")
+    return redirect(url_for("conversation", user_id=other.id))
+
 @app.route("/api/v1/status")
 def api_status():
     return jsonify({"name": MARKETPLACE_NAME, "version": SITE_VERSION, "status": "online",
                     "mode": "local-first", "features": ["catalog-search", "seller-dashboard",
-                    "favorites", "reviews", "notifications", "local-uploads"]})
+                    "favorites", "reviews", "notifications", "local-uploads", "social-feed", "direct-messaging", "mt-group", "call-requests"]})
 
 @app.route("/health")
 def health():
