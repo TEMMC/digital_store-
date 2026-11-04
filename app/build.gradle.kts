@@ -29,6 +29,7 @@ android {
 
 chaquopy {
     defaultConfig {
+        buildPython(System.getenv("CHAQUOPY_BUILD_PYTHON") ?: "python3.11")
         version = "3.11"
         pip {
             install("Flask==3.1.3")
