@@ -91,7 +91,7 @@
 <p>⬇ Downloads: {{ p.downloads }}</p>
 
 {% if not p.approved %}
-    <a class="btn" href="/approve/{{ p.id }}">Approve</a>
+    <form method="POST" action="/approve/{{ p.id }}"><button class="btn" type="submit">Approve</button></form>
 {% else %}
     <span style="color:#94a3b8;">Already approved</span>
 {% endif %}
