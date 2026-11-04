@@ -30,7 +30,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 MARKETPLACE_NAME = "MT Digital Store"
-SITE_VERSION = "3.0"
+SITE_VERSION = "3.1"
 DEFAULT_CATEGORIES = ["Apps", "Games", "Documents", "Music", "Videos", "Ebooks",
     "Scripts", "Templates", "Courses", "AI Tools", "Graphics", "Themes",
     "Plugins", "Source Code", "Education", "Business", "News", "Utilities",
