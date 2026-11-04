@@ -142,7 +142,7 @@
 <!-- ADD PRODUCT FORM -->
 <!-- ===================== -->
 
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
 
     <label>
         Product Name
@@ -167,7 +167,7 @@
         Category
     </label>
 
-    <select name="category">
+    <select name="category">{% for category in categories %}<option value="{{ category }}">{{ category }}</option>{% endfor %}
 
         <option value="Apps">Apps</option>
 
@@ -231,7 +231,7 @@
 
     </label>
 
-    <label>
+    <label>Product file upload</label><input type="file" name="file" accept=".zip,.apk,.pdf,.epub,.mp3,.mp4,.png,.jpg,.jpeg,.webp,.txt,.md,.docx,.xlsx,.pptx,.py,.js,.html,.css,.json,.7z,.tar,.gz"><p>Or use an HTTPS download link:</p><label>
         Product Download URL
     </label>
 
@@ -242,7 +242,7 @@
         required
     >
 
-    <label>
+    <label>Product image upload</label><input type="file" name="image" accept="image/png,image/jpeg,image/webp,image/gif"><label>
         Product Image URL
     </label>
 
