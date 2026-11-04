@@ -5,6 +5,10 @@ on:
     branches: [mt-digital-store-android]
     paths:
       - "app/**"
+      - "templates/**"
+      - "static/**"
+      - "app.py"
+      - "requirements.txt"
       - "*.gradle.kts"
       - "gradle.properties"
       - ".github/workflows/build-mt-digital-store-android.yml"
