@@ -8,7 +8,10 @@ generate_password_hash,
 check_password_hash
 )
 
-from supabase import create_client
+try:
+    from supabase import create_client
+except ImportError:
+    create_client = None
 
 from datetime import datetime
 
@@ -46,7 +49,7 @@ def supabase_enabled():
        return supabase is not None
 
 
-if SUPABASE_URL and SUPABASE_KEY:
+if SUPABASE_URL and SUPABASE_KEY and create_client is not None:
     try:
         supabase = create_client(
             SUPABASE_URL,
@@ -124,7 +127,7 @@ print("Supabase Enabled:", supabase_enabled())
 #=====================
 
 MARKETPLACE_NAME = (
-"METMC Digital Store"
+"MT Digital Store"
 )
 
 SITE_VERSION = "2.0"
