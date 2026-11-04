@@ -174,7 +174,7 @@ MT Digital Store
 
 <span>
 👤 {{ session["user"] }}
-</span>{% if session.get("role") == "seller" %}
+</span>{% if session.get("role") in ["seller", "admin"] %}
 <a href="/add" class="btn">
 ➕ Upload Product
 </a>
@@ -183,7 +183,7 @@ MT Digital Store
 📊 Dashboard
 </a>
 {% endif %}<a href="/" class="btn">
-🏠 Home
+🏠 Explore</a><a href="/favorites">♡ Saved</a><a href="/profile">Profile</a><a href="/notifications">Alerts{% if unread_notifications %} ({{ unread_notifications }}){% endif %}</a>{% if session.get("role") == "admin" %}<a href="/admin">Admin</a>{% endif %}<a href="/" class="btn">
 </a><a href="/logout">
 🚪 Logout
 </a>{% else %}
