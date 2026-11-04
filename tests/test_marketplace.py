@@ -87,5 +87,55 @@ class MarketplaceSmokeTests(unittest.TestCase):
         response = self.client.post("/login", data={"username": "x", "password": "y"})
         self.assertEqual(response.status_code, 400)
 
+
+    def test_social_feed_and_about(self):
+        self.register_and_login(username="socialuser")
+        token = self.token("/feed")
+        response = self.client.post("/feed", data={"_csrf_token": token, "body": "Hello MT community!"}, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Hello MT community!", response.data)
+        self.assertEqual(self.client.get("/about").status_code, 200)
+        self.assertIn(b"Tinotenda Enock Mapfumo", self.client.get("/about").data)
+
+    def test_direct_messages_and_group_membership(self):
+        self.register_and_login(username="sender")
+        with marketplace.app.app_context():
+            recipient = marketplace.User(username="receiver", email="receiver@example.test",
+                password=marketplace.generate_password_hash("StrongPass123"), role="buyer")
+            marketplace.db.session.add(recipient)
+            marketplace.db.session.commit()
+            recipient_id = recipient.id
+        token = self.token(f"/messages/{recipient_id}")
+        response = self.client.post(f"/messages/{recipient_id}",
+            data={"_csrf_token": token, "body": "Hello from MT"},
+            follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Hello from MT", response.data)
+        token = self.token("/mt-group")
+        response = self.client.post("/mt-group",
+            data={"_csrf_token": token, "action": "join"}, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        token = self.token("/mt-group")
+        response = self.client.post("/mt-group",
+            data={"_csrf_token": token, "action": "send", "body": "Hello MT Group"},
+            follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Hello MT Group", response.data)
+
+    def test_call_request_is_recorded_without_claiming_live_call(self):
+        self.register_and_login(username="caller")
+        with marketplace.app.app_context():
+            recipient = marketplace.User(username="callee", email="callee@example.test",
+                password=marketplace.generate_password_hash("StrongPass123"), role="buyer")
+            marketplace.db.session.add(recipient)
+            marketplace.db.session.commit()
+            recipient_id = recipient.id
+        token = self.token(f"/messages/{recipient_id}")
+        response = self.client.post(f"/call/{recipient_id}",
+            data={"_csrf_token": token, "call_type": "video"}, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        with marketplace.app.app_context():
+            self.assertEqual(marketplace.CallRequest.query.count(), 1)
+
 if __name__ == "__main__":
     unittest.main()
