@@ -539,7 +539,8 @@ def messages():
         latest.setdefault(other, m)
     contacts = sorted(contacts, key=lambda u: latest[u.id].created_at if u.id in latest else datetime.min, reverse=True)
     unread = DirectMessage.query.filter_by(recipient_id=uid, is_read=0).count()
-    return render_template("messages.html", contacts=contacts, latest=latest, unread=unread)
+    people = User.query.filter(User.id != uid).order_by(User.username.asc()).limit(100).all()
+    return render_template("messages.html", contacts=contacts, latest=latest, unread=unread, people=people)
 
 @app.route("/messages/<int:user_id>", methods=["GET", "POST"])
 @login_required
