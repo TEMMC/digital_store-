@@ -3,6 +3,7 @@ package com.metmc.digitalstore
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -101,6 +102,22 @@ class MainActivity : Activity() {
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val uri = request?.url ?: return false
+                if (uri.scheme == "tel") {
+                    try {
+                        startActivity(Intent(Intent.ACTION_DIAL, uri))
+                    } catch (_: Exception) {
+                        Toast.makeText(this@MainActivity, "No phone dialler is available", Toast.LENGTH_SHORT).show()
+                    }
+                    return true
+                }
+                if (uri.scheme == "mailto") {
+                    try {
+                        startActivity(Intent(Intent.ACTION_SENDTO, uri))
+                    } catch (_: Exception) {
+                        Toast.makeText(this@MainActivity, "No email app is available", Toast.LENGTH_SHORT).show()
+                    }
+                    return true
+                }
                 return uri.scheme != "http" && uri.scheme != "https"
             }
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
