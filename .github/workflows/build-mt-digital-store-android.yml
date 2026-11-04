@@ -19,6 +19,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Set up Python 3.11 for Chaquopy
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Set Chaquopy build Python
+        run: echo "CHAQUOPY_BUILD_PYTHON=$(which python)" >> "$GITHUB_ENV"
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
