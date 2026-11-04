@@ -19,12 +19,18 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import org.json.JSONArray
+import org.json.JSONObject
+
+private data class SavedPage(val title: String, val url: String)
 
 class MainActivity : Activity() {
     private lateinit var webView: WebView
@@ -60,11 +66,16 @@ class MainActivity : Activity() {
             setTextColor(android.graphics.Color.rgb(90, 235, 155))
             typeface = android.graphics.Typeface.DEFAULT_BOLD
         }
+        val pages = Button(this).apply {
+            text = "WEB PAGES"
+            setOnClickListener { showPagesDialog() }
+        }
         val settings = Button(this).apply {
             text = "SET URL"
             setOnClickListener { showUrlDialog() }
         }
         header.addView(brand, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        header.addView(pages)
         header.addView(settings)
         progress = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
             max = 100
@@ -77,7 +88,7 @@ class MainActivity : Activity() {
             setPadding(16, 5, 16, 5)
         }
         address = EditText(this).apply {
-            hint = "Marketplace address (https://...)"
+            hint = "Website address (https://...)"
             setSingleLine(true)
             setTextColor(android.graphics.Color.WHITE)
             setHintTextColor(android.graphics.Color.GRAY)
@@ -89,11 +100,11 @@ class MainActivity : Activity() {
         }
         val open = Button(this).apply {
             text = "OPEN"
-            setOnClickListener { saveAndLoad(address.text.toString()) }
+            setOnClickListener { openAddress(address.text.toString()) }
         }
         val refresh = Button(this).apply {
             text = "REFRESH"
-            setOnClickListener { if (storeUrl.isNotBlank()) webView.reload() else showUrlDialog() }
+            setOnClickListener { if (webView.url != null) webView.reload() else showUrlDialog() }
         }
         controls.addView(open, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         controls.addView(refresh, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
@@ -121,7 +132,7 @@ class MainActivity : Activity() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 progress.progress = newProgress
                 progress.visibility = if (newProgress in 1..99) View.VISIBLE else View.GONE
-                status.text = if (newProgress == 100) "Store loaded" else "Loading $newProgress%"
+                status.text = if (newProgress == 100) "Page loaded" else "Loading $newProgress%"
             }
         }
         webView.webViewClient = object : WebViewClient() {
@@ -129,9 +140,12 @@ class MainActivity : Activity() {
                 val uri = request?.url ?: return false
                 return uri.scheme != "https" && uri.scheme != "http"
             }
+            override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                if (!url.isNullOrBlank()) address.setText(url)
+            }
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 if (request?.isForMainFrame == true) status.text =
-                    if (isOnline()) "Could not load store" else "Offline"
+                    if (isOnline()) "Could not load page" else "Offline"
             }
         }
         webView.setDownloadListener(DownloadListener { url, userAgent, _, mimeType, _ ->
@@ -141,7 +155,7 @@ class MainActivity : Activity() {
                     .addRequestHeader("User-Agent", userAgent)
                     .addRequestHeader("Cookie", CookieManager.getInstance().getCookie(url) ?: "")
                     .setTitle("MT Digital Store download")
-                    .setDescription("Downloading marketplace file")
+                    .setDescription("Downloading website file")
                     .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                     .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "MT-Store-" + System.currentTimeMillis())
                 (getSystemService(DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
@@ -152,24 +166,166 @@ class MainActivity : Activity() {
         })
     }
 
+    private fun normalizeHttpsUrl(raw: String): String? {
+        var value = raw.trim()
+        if (value.isBlank()) return null
+        if (!value.contains("://")) value = "https://$value"
+        val uri = Uri.parse(value)
+        return if (uri.scheme == "https" && !uri.host.isNullOrBlank()) value else null
+    }
+
+    private fun openAddress(raw: String) {
+        val url = normalizeHttpsUrl(raw)
+        if (url == null) {
+            Toast.makeText(this, "Enter a valid HTTPS website address", Toast.LENGTH_LONG).show()
+            return
+        }
+        address.setText(url)
+        status.text = "Opening website"
+        webView.loadUrl(url)
+    }
+
     private fun saveAndLoad(raw: String) {
-        val value = raw.trim()
-        if (!value.startsWith("https://")) {
-            Toast.makeText(this, "Enter your secure HTTPS marketplace URL", Toast.LENGTH_LONG).show()
+        val url = normalizeHttpsUrl(raw)
+        if (url == null) {
+            Toast.makeText(this, "Enter a valid HTTPS marketplace URL", Toast.LENGTH_LONG).show()
             return
         }
-        if (Uri.parse(value).host.isNullOrBlank()) {
-            Toast.makeText(this, "Invalid marketplace URL", Toast.LENGTH_SHORT).show()
-            return
-        }
-        prefs.edit().putString("store_url", value).apply()
-        loadStore()
+        prefs.edit().putString("store_url", url).apply()
+        address.setText(url)
+        webView.loadUrl(url)
     }
 
     private fun loadStore() {
         address.setText(storeUrl)
         if (!isOnline()) status.text = "Offline — showing cached pages where available"
         webView.loadUrl(storeUrl)
+    }
+
+    private fun readSavedPages(): MutableList<SavedPage> {
+        val pages = mutableListOf<SavedPage>()
+        val json = prefs.getString("saved_web_pages", "[]") ?: "[]"
+        try {
+            val array = JSONArray(json)
+            for (i in 0 until array.length()) {
+                val item = array.optJSONObject(i) ?: continue
+                val title = item.optString("title").trim()
+                val url = item.optString("url").trim()
+                if (title.isNotBlank() && normalizeHttpsUrl(url) != null) pages.add(SavedPage(title, url))
+            }
+        } catch (_: Exception) {
+            prefs.edit().putString("saved_web_pages", "[]").apply()
+        }
+        return pages
+    }
+
+    private fun savePages(pages: List<SavedPage>) {
+        val array = JSONArray()
+        pages.forEach { page ->
+            array.put(JSONObject().put("title", page.title).put("url", page.url))
+        }
+        prefs.edit().putString("saved_web_pages", array.toString()).apply()
+    }
+
+    private fun showPagesDialog() {
+        val pages = readSavedPages()
+        val listView = ListView(this)
+        val labels = pages.map { "${it.title}\n${it.url}" }
+        listView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, labels)
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Your web pages")
+            .setView(listView)
+            .setPositiveButton("ADD PAGE", null)
+            .setNegativeButton("CLOSE", null)
+            .create()
+        listView.setOnItemClickListener { _, _, position, _ ->
+            openAddress(pages[position].url)
+            dialog.dismiss()
+        }
+        listView.setOnItemLongClickListener { _, _, position, _ ->
+            showPageActions(pages[position], position)
+            true
+        }
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                showPageEditor(null, null) {
+                    dialog.dismiss()
+                    showPagesDialog()
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    private fun showPageActions(page: SavedPage, index: Int) {
+        AlertDialog.Builder(this)
+            .setTitle(page.title)
+            .setItems(arrayOf("Open page", "Edit page", "Delete page")) { _, choice ->
+                when (choice) {
+                    0 -> openAddress(page.url)
+                    1 -> showPageEditor(page, index)
+                    2 -> AlertDialog.Builder(this)
+                        .setMessage("Delete \"${page.title}\" from your saved pages?")
+                        .setPositiveButton("DELETE") { _, _ ->
+                            val pages = readSavedPages()
+                            if (index in pages.indices) {
+                                pages.removeAt(index)
+                                savePages(pages)
+                                Toast.makeText(this, "Page deleted", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        .setNegativeButton("CANCEL", null)
+                        .show()
+                }
+            }
+            .show()
+    }
+
+    private fun showPageEditor(page: SavedPage?, index: Int?, onSaved: () -> Unit = {}) {
+        val form = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(24, 8, 24, 0)
+        }
+        val titleInput = EditText(this).apply {
+            hint = "Page name (e.g. Products)"
+            setSingleLine(true)
+            setText(page?.title ?: "")
+        }
+        val urlInput = EditText(this).apply {
+            hint = "https://example.com/page"
+            setSingleLine(true)
+            setText(page?.url ?: "")
+        }
+        form.addView(titleInput)
+        form.addView(urlInput)
+        AlertDialog.Builder(this)
+            .setTitle(if (page == null) "Add web page" else "Edit web page")
+            .setView(form)
+            .setPositiveButton("SAVE", null)
+            .setNegativeButton("CANCEL", null)
+            .create().also { dialog ->
+                dialog.setOnShowListener {
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        val url = normalizeHttpsUrl(urlInput.text.toString())
+                        if (url == null) {
+                            urlInput.error = "Enter a valid HTTPS address"
+                            return@setOnClickListener
+                        }
+                        val title = titleInput.text.toString().trim().ifBlank {
+                            Uri.parse(url).host ?: "Saved page"
+                        }
+                        val pages = readSavedPages()
+                        val saved = SavedPage(title, url)
+                        if (index != null && index in pages.indices) pages[index] = saved
+                        else pages.add(saved)
+                        savePages(pages)
+                        Toast.makeText(this, "Web page saved", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                        onSaved()
+                    }
+                }
+                dialog.show()
+            }
     }
 
     private fun showSetupMessage() {
@@ -179,7 +335,7 @@ class MainActivity : Activity() {
             <body style="background:#0a100e;color:#e8fff0;font-family:sans-serif;padding:28px">
             <h2 style="color:#5aeb9b">Welcome to MT Digital Store</h2>
             <p>Connect this app to your deployed MT Digital Store website.</p>
-            <p>Tap <b>SET URL</b> and enter its HTTPS address.</p></body></html>
+            <p>Tap <b>SET URL</b> to connect your marketplace, or <b>WEB PAGES</b> to add saved websites.</p></body></html>
         """.trimIndent(), "text/html", "UTF-8", null)
         showUrlDialog()
     }
