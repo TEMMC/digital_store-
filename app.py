@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from pathlib import Path
 from urllib.parse import urlparse
-import os, uuid
+import os, uuid, hmac
 
 from flask import (Flask, render_template, request, redirect, url_for, session,
                    flash, send_from_directory, abort, jsonify)
@@ -167,10 +167,19 @@ def security_headers(response):
 
 @app.context_processor
 def inject_globals():
+    session.setdefault("_csrf_token", uuid.uuid4().hex)
     user = current_user()
     unread = Notification.query.filter_by(username=user.username, is_read=0).count() if user else 0
     return {"MARKETPLACE_NAME": MARKETPLACE_NAME, "SITE_VERSION": SITE_VERSION,
-            "current_user": user, "unread_notifications": unread}
+            "current_user": user, "unread_notifications": unread, "csrf_token": session.get("_csrf_token") }
+
+@app.before_request
+def protect_post_requests():
+    if request.method == "POST":
+        expected = session.get("_csrf_token", "")
+        supplied = request.form.get("_csrf_token", "") or request.headers.get("X-CSRF-Token", "")
+        if not expected or not supplied or not hmac.compare_digest(expected, supplied):
+            abort(400, description="Security token missing or expired. Reload the page and try again.")
 
 @app.errorhandler(413)
 def too_large(_error):
@@ -426,6 +435,8 @@ def delete(product_id):
     item = db.get_or_404(Product, product_id)
     if item.seller != current_user().username and current_user().role != "admin":
         abort(403)
+    Favorite.query.filter_by(product_id=item.id).delete(synchronize_session=False)
+    Review.query.filter_by(product_id=item.id).delete(synchronize_session=False)
     db.session.delete(item)
     db.session.commit()
     flash("Product removed.")
