@@ -5,7 +5,7 @@
         android:allowBackup="true"
         android:label="MT Digital Store"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
-        android:usesCleartextTraffic="false"
+        android:usesCleartextTraffic="true"
         android:supportsRtl="true">
         <activity
             android:name=".MainActivity"
