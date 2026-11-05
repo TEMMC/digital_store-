@@ -12,8 +12,9 @@ android {
         applicationId = "com.metmc.digitalstore"
         minSdk = 24
         targetSdk = 35
-        versionCode = 5
-        versionName = "3.2.0"
+        versionCode = 6
+        versionName = "3.3.0"
+        buildConfigField("String", "REMOTE_SERVER_URL", "\"${System.getenv("MT_REMOTE_SERVER_URL") ?: ""}\"")
         ndk { abiFilters += listOf("arm64-v8a") }
     }
 
