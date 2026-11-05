@@ -133,6 +133,22 @@ class MarketplaceSmokeTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Welcome to MT Group", response.data)
 
+    def test_cross_device_messaging_api_and_group_api(self):
+        self.register_and_login(username="api_sender")
+        with marketplace.app.app_context():
+            other = self.create_user("api_receiver")
+            other_id = other.id
+        token = self.token(f"/messages/{other_id}")
+        response = self.client.post(f"/api/v1/messages/{other_id}",
+            json={"body": "API hello"}, headers={"X-CSRF-Token": token})
+        self.assertEqual(response.status_code, 201, response.data)
+        token = self.token("/mt-group")
+        self.client.post("/mt-group", data={"_csrf_token": token, "action": "join"})
+        response = self.client.post("/api/v1/mt-group", json={"body": "Group API hello"},
+            headers={"X-CSRF-Token": token})
+        self.assertEqual(response.status_code, 201, response.data)
+        self.assertEqual(self.client.get("/api/v1/mt-group").status_code, 200)
+
     def test_post_without_csrf_is_rejected(self):
         response = self.client.post("/login", data={"username": "x", "password": "y"})
         self.assertEqual(response.status_code, 400)
