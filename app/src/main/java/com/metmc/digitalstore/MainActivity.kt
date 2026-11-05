@@ -32,6 +32,7 @@ class MainActivity : Activity() {
     private lateinit var status: TextView
     private val worker = Executors.newSingleThreadExecutor()
     private val localUrl = "http://127.0.0.1:8765/"
+    private val remoteUrl = BuildConfig.REMOTE_SERVER_URL.trim()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -148,6 +149,11 @@ class MainActivity : Activity() {
     }
 
     private fun startLocalMarketplace() {
+        if (remoteUrl.isNotBlank()) {
+            status.text = "Connecting to MT Digital Store server…"
+            webView.loadUrl(remoteUrl + "/")
+            return
+        }
         status.text = "Preparing the marketplace files…"
         worker.execute {
             try {
