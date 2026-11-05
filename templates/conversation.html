@@ -7,4 +7,4 @@
  async function refresh(){try{const r=await fetch(endpoint+'?after='+lastId,{credentials:'same-origin'});if(!r.ok)return;const d=await r.json();for(const m of d.messages){if(m.id<=lastId)continue;const el=document.createElement('article');el.className='chat-bubble '+(m.sender_id==={{ current_user.id }}?'mine':'theirs');el.dataset.messageId=m.id;const p=document.createElement('p');p.textContent=m.body;const t=document.createElement('small');t.textContent=new Date(m.created_at).toLocaleString();el.append(p,t);list.append(el);lastId=Math.max(lastId,m.id);}if(d.messages.length)list.scrollTop=list.scrollHeight;}catch(e){}}
  setInterval(refresh,3000);
 })();
-</script>{% endblock %}
+</script><script src="/static/mt-chat-sync.js" defer></script>{% endblock %}
