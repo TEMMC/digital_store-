@@ -19,7 +19,7 @@ app.config.update(
     MAX_CONTENT_LENGTH=100 * 1024 * 1024,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=False,  # local HTTP loopback WebView
+    SESSION_COOKIE_SECURE=os.environ.get("MT_HTTPS", "").lower() in ("1", "true", "yes"),
     PERMANENT_SESSION_LIFETIME=timedelta(days=14),
 )
 db_url = os.environ.get("DATABASE_URL") or "sqlite:///store.db"
@@ -30,7 +30,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 MARKETPLACE_NAME = "MT Digital Store"
-SITE_VERSION = "3.1.1"
+SITE_VERSION = "3.3.0"
 DEFAULT_CATEGORIES = ["Apps", "Games", "Documents", "Music", "Videos", "Ebooks",
     "Scripts", "Templates", "Courses", "AI Tools", "Graphics", "Themes",
     "Plugins", "Source Code", "Education", "Business", "News", "Utilities",
@@ -608,11 +608,93 @@ def request_call(user_id):
     flash("Call request sent. Live app-to-app audio/video requires a reachable peer and WebRTC signalling service; this offline local-only build cannot connect remote devices yet.")
     return redirect(url_for("conversation", user_id=other.id))
 
+
+def api_login_required(fn):
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+        if not current_user():
+            return jsonify({"error": "authentication_required"}), 401
+        return fn(*args, **kwargs)
+    return wrapped
+
+@app.get("/api/v1/messages/<int:user_id>")
+@api_login_required
+def api_conversation(user_id):
+    other = db.get_or_404(User, user_id)
+    uid = current_user().id
+    if uid == other.id:
+        abort(400)
+    after_id = max(0, request.args.get("after", 0, type=int))
+    query = DirectMessage.query.filter(db.or_(
+        db.and_(DirectMessage.sender_id == uid, DirectMessage.recipient_id == other.id),
+        db.and_(DirectMessage.sender_id == other.id, DirectMessage.recipient_id == uid)
+    ))
+    if after_id:
+        query = query.filter(DirectMessage.id > after_id)
+    rows = query.order_by(DirectMessage.id.asc()).limit(100).all()
+    DirectMessage.query.filter_by(sender_id=other.id, recipient_id=uid, is_read=0).update({"is_read": 1})
+    db.session.commit()
+    return jsonify({"messages": [{"id": m.id, "sender_id": m.sender_id,
+        "body": m.body, "created_at": m.created_at.isoformat() + "Z"} for m in rows],
+        "other": other.username})
+
+@app.post("/api/v1/messages/<int:user_id>")
+@api_login_required
+def api_send_message(user_id):
+    other = db.get_or_404(User, user_id)
+    sender = current_user()
+    if sender.id == other.id:
+        abort(400)
+    data = request.get_json(silent=True) or {}
+    body = str(data.get("body", "")).strip()
+    if not body or len(body) > 4000:
+        return jsonify({"error": "message_length_invalid"}), 400
+    msg = DirectMessage(sender_id=sender.id, recipient_id=other.id, body=body)
+    db.session.add(msg)
+    notify(other.username, "New message", f"You received a message from {sender.username}.")
+    db.session.commit()
+    return jsonify({"id": msg.id, "sender_id": sender.id, "body": msg.body,
+                    "created_at": msg.created_at.isoformat() + "Z"}), 201
+
+@app.get("/api/v1/mt-group")
+@api_login_required
+def api_mt_group_messages():
+    member = MTGroupMember.query.filter_by(user_id=current_user().id, group_name="MT Group").first()
+    if not member:
+        return jsonify({"error": "membership_required"}), 403
+    after_id = max(0, request.args.get("after", 0, type=int))
+    query = MTGroupMessage.query.filter_by(group_name="MT Group")
+    if after_id:
+        query = query.filter(MTGroupMessage.id > after_id)
+    rows = query.order_by(MTGroupMessage.id.asc()).limit(100).all()
+    authors = {u.id: u.username for u in User.query.filter(
+        User.id.in_([m.user_id for m in rows])).all()} if rows else {}
+    return jsonify({"messages": [{"id": m.id, "user_id": m.user_id,
+        "username": authors.get(m.user_id, "MT member"), "body": m.body,
+        "created_at": m.created_at.isoformat() + "Z"} for m in rows]})
+
+@app.post("/api/v1/mt-group")
+@api_login_required
+def api_send_mt_group_message():
+    member = MTGroupMember.query.filter_by(user_id=current_user().id, group_name="MT Group").first()
+    if not member:
+        return jsonify({"error": "membership_required"}), 403
+    data = request.get_json(silent=True) or {}
+    body = str(data.get("body", "")).strip()
+    if not body or len(body) > 4000:
+        return jsonify({"error": "message_length_invalid"}), 400
+    msg = MTGroupMessage(user_id=current_user().id, group_name="MT Group", body=body)
+    db.session.add(msg)
+    db.session.commit()
+    return jsonify({"id": msg.id, "user_id": msg.user_id,
+        "username": current_user().username, "body": msg.body,
+        "created_at": msg.created_at.isoformat() + "Z"}), 201
+
 @app.route("/api/v1/status")
 def api_status():
     return jsonify({"name": MARKETPLACE_NAME, "version": SITE_VERSION, "status": "online",
-                    "mode": "local-first", "features": ["catalog-search", "seller-dashboard",
-                    "favorites", "reviews", "notifications", "local-uploads", "social-feed", "direct-messaging", "mt-group", "call-requests"]})
+                    "mode": "server-backed", "features": ["catalog-search", "seller-dashboard",
+                    "favorites", "reviews", "notifications", "local-uploads", "social-feed", "direct-messaging", "mt-group", "call-requests", "cross-device-messaging-api", "group-chat-api"]})
 
 @app.route("/health")
 def health():
@@ -634,4 +716,4 @@ with app.app_context():
             db.session.commit()
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=int(os.environ.get("PORT", "8765")), debug=False)
+    app.run(host=os.environ.get("MT_BIND_HOST", "127.0.0.1"), port=int(os.environ.get("PORT", "8765")), debug=False)
