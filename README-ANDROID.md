@@ -1,4 +1,4 @@
-# MT Digital Store 3.2 — local-first marketplace and community
+# MT Digital Store 3.3 — marketplace and MT community
 
 MT Digital Store runs a bundled Flask application on the Android phone and opens it in the app's WebView at `http://127.0.0.1:8765/`. The SQLite database, uploads and Flask secret are stored in app-private storage.
 
@@ -16,7 +16,15 @@ MT Digital Store runs a bundled Flask application on the Android phone and opens
 - Call request records for voice/video and a phone-dialler link when a member has provided a phone number.
 
 ## Communication limitations — important
-This build stores messages and group posts locally on the device. It does not yet synchronize accounts across different phones. The server binds to loopback only. Voice/video call request buttons send a notification/request record; they do **not** establish a live call. Real app-to-app calling needs a reachable signalling service and WebRTC media transport, plus camera/microphone permissions and secure deployment. The phone dialler link can start a normal carrier call after the user confirms in Android's dialler.
+The APK remains local-first by default. For shared accounts and cross-device messaging, deploy the included Docker/Render server and build the APK with MT_REMOTE_SERVER_URL set to its HTTPS origin. The direct-message and MT Group APIs are available for authenticated clients. Use persistent PostgreSQL and upload storage in production. Voice/video call requests still notify members but do not establish a live WebRTC call; this requires a separate signalling/media service and TURN infrastructure.
 
 ## Build and checks
 GitHub Actions runs backend smoke tests and then builds the arm64 debug APK. Chaquopy embeds Python 3.11, Flask and Flask-SQLAlchemy. Minimum Android API is 24.
+
+
+## Shared server deployment
+
+- A production Docker image and Render blueprint are included (`Dockerfile`, `render.yaml`).
+- Set `DATABASE_URL` to PostgreSQL, `SECRET_KEY` to a long random secret, `MT_HTTPS=1`, and `UPLOAD_FOLDER` to persistent storage.
+- Set the GitHub Actions repository variable `MT_REMOTE_SERVER_URL` to the deployed HTTPS origin before building the APK. Leave it unset for on-device mode.
+- Do not expose Flask's development server publicly. Use HTTPS, backups, persistent uploads and a production database.
