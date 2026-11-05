@@ -46,6 +46,8 @@ jobs:
         with:
           gradle-version: "8.9"
       - name: Build debug APK
+        env:
+          MT_REMOTE_SERVER_URL: ${{ vars.MT_REMOTE_SERVER_URL }}
         run: gradle --no-daemon :app:assembleDebug
       - name: Upload APK
         uses: actions/upload-artifact@v4
