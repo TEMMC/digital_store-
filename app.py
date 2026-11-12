@@ -30,7 +30,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 MARKETPLACE_NAME = "MT Digital Store"
-SITE_VERSION = "3.3.0"
+SITE_VERSION = "3.4.0"
 DEFAULT_CATEGORIES = ["Apps", "Games", "Documents", "Music", "Videos", "Ebooks",
     "Scripts", "Templates", "Courses", "AI Tools", "Graphics", "Themes",
     "Plugins", "Source Code", "Education", "Business", "News", "Utilities",
@@ -504,6 +504,11 @@ def notifications():
         item.is_read = 1
     db.session.commit()
     return render_template("notifications.html", notifications=items)
+
+
+@app.route("/study")
+def study_centre():
+    return render_template("study.html")
 
 
 @app.route("/about")
