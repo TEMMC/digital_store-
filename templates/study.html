@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}MT A-Level Study Centre · ZIMSEC{% endblock %}
+{% block content %}
+<section class="study-hero">
+  <span class="eyebrow">MT LEARNING · ZIMSEC A-LEVEL</span>
+  <h1>Study smarter.<br><span class="gradient-text">Even offline.</span></h1>
+  <p>Five A-Level subjects, topic notes, worked examples and self-marking practice. Your progress is saved on this device.</p>
+  <div class="study-status"><span>● Offline-ready content</span><span>Progress stored on this device</span></div>
+</section>
+<section class="study-layout">
+  <aside class="study-sidebar">
+    <label for="study-search">Find a topic</label>
+    <input id="study-search" type="search" placeholder="Search topics…">
+    <div id="study-subjects" class="study-subject-list" aria-label="Subjects"></div>
+    <div class="study-progress-card"><strong>Your progress</strong><div class="study-progress-track"><span id="study-progress-fill"></span></div><p id="study-progress-label">0 topics completed</p><button id="study-reset" class="study-reset" type="button">Reset progress</button></div>
+  </aside>
+  <div class="study-main">
+    <div id="study-topic-list" class="study-topic-list"></div>
+    <article id="study-lesson" class="study-lesson" aria-live="polite">
+      <div class="study-empty"><div class="study-symbol">✦</div><h2>Choose a subject to begin</h2><p>Select a topic to open its notes and practice questions.</p></div>
+    </article>
+  </div>
+</section>
+<p class="study-disclaimer">Syllabus note: this is an offline learning resource structured around common ZIMSEC A-Level subject areas. It is not an official ZIMSEC publication. Check the current subject syllabus and your teacher's scheme of work for the complete examinable topic list.</p>
+<script src="/static/mt-study.js" defer></script>
+{% endblock %}
