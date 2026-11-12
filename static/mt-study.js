@@ -200,9 +200,11 @@
     const headings = t.sections.map(section => section[0]);
     t.sections.forEach((section, index) => {
       const options = [section[0], ...headings.filter((_, i) => i !== index)].slice(0, 4);
+      const shift = index % options.length;
+      const arranged = options.slice(shift).concat(options.slice(0, shift));
       t.questions.push({
         q: "Which section covers this idea: " + section[1].split(/[.!?]/)[0] + "?",
-        o: options, a: 0,
+        o: arranged, a: arranged.indexOf(section[0]),
         e: "Review " + section[0] + ": " + section[1]
       });
     });
