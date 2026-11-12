@@ -85,6 +85,15 @@ class MainActivity : Activity() {
 
     @Suppress("SetJavaScriptEnabled")
     private fun configureWebView() {
+        webView.isClickable = true
+        webView.isFocusable = true
+        webView.isFocusableInTouchMode = true
+        webView.setOnTouchListener { view, event ->
+            if (event.action == android.view.MotionEvent.ACTION_DOWN) {
+                view.parent?.requestDisallowInterceptTouchEvent(true)
+            }
+            false
+        }
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.settings.databaseEnabled = true
