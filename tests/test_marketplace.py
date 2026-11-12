@@ -50,6 +50,14 @@ class MarketplaceSmokeTests(unittest.TestCase):
         self.assertEqual(self.client.get("/health").json["status"], "ok")
         self.assertEqual(self.client.get("/api/v1/status").json["status"], "online")
 
+    def test_offline_study_centre(self):
+        response = self.client.get("/study")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"ZIMSEC A-LEVEL", response.data)
+        self.assertIn(b"mt-study.js", response.data)
+        self.assertEqual(self.client.get("/static/mt-study.js").status_code, 200)
+        self.assertEqual(self.client.get("/static/mt-study.css").status_code, 200)
+
     def test_registration_role_is_limited_and_login(self):
         self.register_and_login(role="admin", username="publicuser")
         with self.client.session_transaction() as sess:
