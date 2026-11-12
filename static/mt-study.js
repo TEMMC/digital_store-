@@ -194,6 +194,19 @@
     ]}
   ];
 
+
+  // Add four section-based revision questions to every topic using the lesson's own notes.
+  courses.forEach(course => course.topics.forEach(t => {
+    const headings = t.sections.map(section => section[0]);
+    t.sections.forEach((section, index) => {
+      const options = [section[0], ...headings.filter((_, i) => i !== index)].slice(0, 4);
+      t.questions.push({
+        q: "Which section covers this idea: " + section[1].split(/[.!?]/)[0] + "?",
+        o: options, a: 0,
+        e: "Review " + section[0] + ": " + section[1]
+      });
+    });
+  }));
   const $ = id => document.getElementById(id);
   const progressKey = "mt-study-progress-v1";
   let activeSubject = courses[0].id;
@@ -233,15 +246,28 @@
       '<h2>'+esc(t.title)+'</h2><p class="lesson-summary">'+esc(t.summary)+'</p>'+
       t.sections.map((s,i)=>'<section class="lesson-section"><h3>'+String(i+1).padStart(2,"0")+' · '+esc(s[0])+'</h3><p>'+esc(s[1])+'</p></section>').join("")+
       '<section class="worked-example"><span class="eyebrow">WORKED EXAMPLE</span><p>'+esc(t.example)+'</p></section>'+
-      '<section class="study-quiz"><span class="eyebrow">CHECK YOUR UNDERSTANDING</span><h3>Practice questions</h3>'+
+      '<section class="study-quiz"><span class="eyebrow">CHECK YOUR UNDERSTANDING</span><h3>Practice questions · '+t.questions.length+' questions</h3>'+ '<div class="study-tool-row"><button type="button" id="shuffle-quiz">Shuffle questions</button><button type="button" id="start-timer">Start 10-minute timer</button><span id="study-timer">Timer off</span></div>'+
       t.questions.map((q,i)=>'<div class="quiz-question" data-question="'+i+'"><p><b>'+ (i+1)+'. '+esc(q.q)+'</b></p><div class="quiz-options">'+q.o.map((o,j)=>'<button type="button" data-answer="'+j+'" class="'+(quizAnswers[i]===j?'chosen':'')+'">'+String.fromCharCode(65+j)+'. '+esc(o)+'</button>').join("")+'</div><p class="quiz-feedback" id="feedback-'+i+'"></p></div>').join("")+
       '<button type="button" class="study-check" id="check-answers">Check answers</button><span id="quiz-score" class="quiz-score"></span></section>'+
+      '<section class="study-flashcards"><h3>Flashcards</h3><p>Tap a card to reveal the explanation.</p>'+t.sections.map((s,i)=>'<button type="button" class="study-flashcard" data-flash="'+i+'"><b>'+esc(s[0])+'</b><span>'+esc(s[1])+'</span></button>').join("")+'</section>'+
       '<div class="lesson-actions"><button type="button" class="study-complete" id="mark-complete">'+(progress[key]?'✓ Completed — mark again':'Mark topic as completed')+'</button><button type="button" class="study-print" id="print-lesson">Print / save lesson</button></div>';
     $("study-lesson").querySelectorAll("[data-question]").forEach(box=>box.querySelectorAll("[data-answer]").forEach(btn=>btn.addEventListener("click",()=>{
       const i=Number(box.dataset.question);quizAnswers[i]=Number(btn.dataset.answer);
       box.querySelectorAll("[data-answer]").forEach(b=>b.classList.toggle("chosen",b===btn));
       $("feedback-"+i).textContent="";
     })));
+    $("shuffle-quiz").addEventListener("click",()=>{t.questions.sort(()=>Math.random()-.5);quizAnswers={};renderLesson();});
+    let timerHandle=null, secondsLeft=600;
+    $("start-timer").addEventListener("click",()=>{
+      if(timerHandle) clearInterval(timerHandle);
+      secondsLeft=600; $("study-timer").textContent="10:00 remaining";
+      timerHandle=setInterval(()=>{
+        secondsLeft--;
+        $("study-timer").textContent=Math.floor(secondsLeft/60)+":"+String(secondsLeft%60).padStart(2,"0")+" remaining";
+        if(secondsLeft<=0){clearInterval(timerHandle);timerHandle=null;$("study-timer").textContent="Time is up — check your answers.";}
+      },1000);
+    });
+    $("study-lesson").querySelectorAll("[data-flash]").forEach(card=>card.addEventListener("click",()=>card.classList.toggle("revealed")));
     $("check-answers").addEventListener("click",()=>{
       let score=0;
       t.questions.forEach((q,i)=>{const ok=quizAnswers[i]===q.a;if(ok)score++;$("feedback-"+i).textContent=(ok?"Correct. ":"Not quite. ")+q.e;$("feedback-"+i).className="quiz-feedback "+(ok?"correct":"incorrect");});
