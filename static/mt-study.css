@@ -11,3 +11,15 @@
 .study-flashcard span{display:none;white-space:normal;line-height:1.6}
 .study-flashcard.revealed span{display:block}
 .study-flashcard.revealed{border-color:var(--accent,#7c6cff)}
+
+.study-daily-card{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)}
+.study-daily-card p,.study-bookmark-empty{font-size:.78rem;color:var(--muted,#9aa9a2)}
+.study-daily-card .study-progress-track span{background:#70a8ff}
+.study-bookmarks{display:grid;gap:7px;margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)}
+.study-bookmarks>strong{font-size:.9rem}
+.study-bookmark-link{width:100%;text-align:left;padding:9px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(255,255,255,.035);color:inherit;cursor:pointer;touch-action:manipulation;min-height:42px}
+.study-bookmark,.study-tool-row button{border:1px solid rgba(255,255,255,.16);border-radius:9px;padding:10px 12px;background:rgba(255,255,255,.05);color:inherit;min-height:44px;cursor:pointer;touch-action:manipulation}
+.study-notes{display:grid;gap:8px;margin-top:22px}
+.study-notes h3,.study-notes p{margin:0}
+.study-notes p,.study-notes span{font-size:.8rem;color:var(--muted,#9aa9a2)}
+.study-notes textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:100px;padding:12px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(0,0,0,.18);color:inherit;font:inherit;line-height:1.5;touch-action:manipulation}
