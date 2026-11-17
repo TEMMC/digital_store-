@@ -211,20 +211,46 @@
   }));
   const $ = id => document.getElementById(id);
   const progressKey = "mt-study-progress-v1";
+  const bookmarkKey = "mt-study-bookmarks-v1";
+  const notesKey = "mt-study-notes-v1";
+  const activityKey = "mt-study-activity-v1";
   let activeSubject = courses[0].id;
   let activeTopic = null;
   let quizAnswers = {};
-  let progress = {};
-  try { progress = JSON.parse(localStorage.getItem(progressKey) || "{}") || {}; } catch (_) { progress = {}; }
+  let quizMode = "all";
+  let questionSetOverride = null;
+  let progress = {}, bookmarks = {}, notes = {}, activity = {};
+  const readStore = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || "null") || fallback; } catch (_) { return fallback; } };
+  progress = readStore(progressKey, {});
+  bookmarks = readStore(bookmarkKey, {});
+  notes = readStore(notesKey, {});
+  activity = readStore(activityKey, {});
   const subject = () => courses.find(s => s.id === activeSubject);
   const topic = () => subject().topics.find(t => t.id === activeTopic);
   const esc = value => String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  function saveProgress(){ localStorage.setItem(progressKey, JSON.stringify(progress)); renderProgress(); }
+  function persist(key, value){ try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (_) { return false; } }
+  function saveProgress(){ persist(progressKey, progress); renderProgress(); }
   function renderProgress(){
     const all = courses.flatMap(s => s.topics.map(t => s.id + ":" + t.id));
     const done = all.filter(k => progress[k]).length;
     $("study-progress-fill").style.width = (100 * done / all.length) + "%";
     $("study-progress-label").textContent = done + " of " + all.length + " topics completed";
+  }
+  function renderDaily(){
+    const today = new Date().toLocaleDateString("en-CA");
+    const count = (activity[today] || []).length;
+    $("study-daily-label").textContent = count + " / 3 topics studied today";
+    $("study-daily-fill").style.width = Math.min(100, count / 3 * 100) + "%";
+  }
+  function renderBookmarks(){
+    const saved = courses.flatMap(s => s.topics.filter(t => bookmarks[s.id + ":" + t.id]).map(t => ({s,t})));
+    $("study-bookmarks").innerHTML = '<strong>Saved topics · '+saved.length+'</strong>' +
+      (saved.length ? saved.map(x => '<button type="button" class="study-bookmark-link" data-open-bookmark="'+x.s.id+':'+x.t.id+'">'+x.s.icon+' '+esc(x.t.title)+'</button>').join("") : '<p class="study-bookmark-empty">Bookmark topics to build your revision list.</p>');
+    $("study-bookmarks").querySelectorAll("[data-open-bookmark]").forEach(btn => btn.addEventListener("click", () => {
+      const parts = btn.dataset.openBookmark.split(":");
+      activeSubject = parts[0]; activeTopic = parts[1]; quizMode = "all"; questionSetOverride = null; quizAnswers = {};
+      renderSubjects(); renderTopics(); renderLesson();
+    }));
   }
   function renderSubjects(){
     $("study-subjects").innerHTML = courses.map(s => '<button type="button" class="study-subject '+(s.id===activeSubject?'active':'')+'" data-subject="'+s.id+'"><span>'+s.icon+'</span><b>'+s.name+'</b><small>'+s.topics.length+' topics</small></button>').join("");
@@ -237,28 +263,36 @@
     const list = subject().topics.filter(t => !q || (t.title+" "+t.summary+" "+t.sections.map(x=>x.join(" ")).join(" ")).toLowerCase().includes(q));
     $("study-topic-list").innerHTML = '<div class="study-topic-heading"><div><span class="eyebrow">SUBJECT TOPICS</span><h2>'+subject().icon+' '+subject().name+'</h2></div><span>'+list.length+' topics</span></div>' +
       (list.length ? list.map(t => '<button type="button" class="study-topic '+(t.id===activeTopic?'active':'')+'" data-topic="'+t.id+'"><span class="study-topic-check">'+(progress[activeSubject+":"+t.id]?'✓':'○')+'</span><span><b>'+esc(t.title)+'</b><small>'+esc(t.summary)+'</small></span><em>'+esc(t.level)+'</em></button>').join("") : '<p class="study-no-results">No matching topics. Try another search.</p>');
-    $("study-topic-list").querySelectorAll("[data-topic]").forEach(btn=>btn.addEventListener("click",()=>{activeTopic=btn.dataset.topic;quizAnswers={};renderTopics();renderLesson();}));
+    $("study-topic-list").querySelectorAll("[data-topic]").forEach(btn=>btn.addEventListener("click",()=>{activeTopic=btn.dataset.topic;quizAnswers={};quizMode="all";questionSetOverride=null;renderTopics();renderLesson();}));
   }
   function renderLesson(){
     const t=topic();
     if(!t){$("study-lesson").innerHTML='<div class="study-empty"><div class="study-symbol">✦</div><h2>Choose a topic</h2><p>Pick a topic above to open the lesson.</p></div>';return;}
     const key=activeSubject+":"+t.id;
+    const questionSet = questionSetOverride || (quizMode === "exam" ? [...t.questions].sort(() => Math.random() - .5).slice(0, 5) : t.questions);
+    const isBookmarked = !!bookmarks[key];
     $("study-lesson").innerHTML =
       '<div class="lesson-topline"><span class="badge">'+esc(t.level)+'</span><span>'+esc(subject().name)+'</span></div>'+
       '<h2>'+esc(t.title)+'</h2><p class="lesson-summary">'+esc(t.summary)+'</p>'+
       t.sections.map((s,i)=>'<section class="lesson-section"><h3>'+String(i+1).padStart(2,"0")+' · '+esc(s[0])+'</h3><p>'+esc(s[1])+'</p></section>').join("")+
       '<section class="worked-example"><span class="eyebrow">WORKED EXAMPLE</span><p>'+esc(t.example)+'</p></section>'+
-      '<section class="study-quiz"><span class="eyebrow">CHECK YOUR UNDERSTANDING</span><h3>Practice questions · '+t.questions.length+' questions</h3>'+ '<div class="study-tool-row"><button type="button" id="shuffle-quiz">Shuffle questions</button><button type="button" id="start-timer">Start 10-minute timer</button><span id="study-timer">Timer off</span></div>'+
-      t.questions.map((q,i)=>'<div class="quiz-question" data-question="'+i+'"><p><b>'+ (i+1)+'. '+esc(q.q)+'</b></p><div class="quiz-options">'+q.o.map((o,j)=>'<button type="button" data-answer="'+j+'" class="'+(quizAnswers[i]===j?'chosen':'')+'">'+String.fromCharCode(65+j)+'. '+esc(o)+'</button>').join("")+'</div><p class="quiz-feedback" id="feedback-'+i+'"></p></div>').join("")+
+      '<section class="study-quiz"><span class="eyebrow">CHECK YOUR UNDERSTANDING</span><h3>'+(quizMode === "exam" ? 'Exam practice · ' : 'Practice questions · ')+questionSet.length+' questions</h3>'+ '<div class="study-tool-row"><button type="button" id="quiz-all">All questions</button><button type="button" id="quiz-exam">5-question exam</button><button type="button" id="shuffle-quiz">Shuffle</button><button type="button" id="start-timer">Start 10-minute timer</button><span id="study-timer">Timer off</span></div>'+
+      questionSet.map((q,i)=>'<div class="quiz-question" data-question="'+i+'"><p><b>'+ (i+1)+'. '+esc(q.q)+'</b></p><div class="quiz-options">'+q.o.map((o,j)=>'<button type="button" data-answer="'+j+'" class="'+(quizAnswers[i]===j?'chosen':'')+'">'+String.fromCharCode(65+j)+'. '+esc(o)+'</button>').join("")+'</div><p class="quiz-feedback" id="feedback-'+i+'"></p></div>').join("")+
       '<button type="button" class="study-check" id="check-answers">Check answers</button><span id="quiz-score" class="quiz-score"></span></section>'+
+      '<section class="study-notes"><h3>My topic notes</h3><p>Private notes saved on this device.</p><textarea id="topic-notes" rows="4" placeholder="Write your own summary, questions or reminders…">'+esc(notes[key] || "")+'</textarea><span id="notes-status" role="status">Saved locally when you type.</span></section>'+
       '<section class="study-flashcards"><h3>Flashcards</h3><p>Tap a card to reveal the explanation.</p>'+t.sections.map((s,i)=>'<button type="button" class="study-flashcard" data-flash="'+i+'"><b>'+esc(s[0])+'</b><span>'+esc(s[1])+'</span></button>').join("")+'</section>'+
-      '<div class="lesson-actions"><button type="button" class="study-complete" id="mark-complete">'+(progress[key]?'✓ Completed — mark again':'Mark topic as completed')+'</button><button type="button" class="study-print" id="print-lesson">Print / save lesson</button></div>';
+      '<div class="lesson-actions"><button type="button" class="study-bookmark" id="toggle-bookmark">'+(isBookmarked?'★ Saved topic':'☆ Save topic')+'</button><button type="button" class="study-complete" id="mark-complete">'+(progress[key]?'✓ Completed — mark again':'Mark topic as completed')+'</button><button type="button" class="study-print" id="print-lesson">Print / save lesson</button></div>';
     $("study-lesson").querySelectorAll("[data-question]").forEach(box=>box.querySelectorAll("[data-answer]").forEach(btn=>btn.addEventListener("click",()=>{
       const i=Number(box.dataset.question);quizAnswers[i]=Number(btn.dataset.answer);
       box.querySelectorAll("[data-answer]").forEach(b=>b.classList.toggle("chosen",b===btn));
       $("feedback-"+i).textContent="";
     })));
-    $("shuffle-quiz").addEventListener("click",()=>{t.questions.sort(()=>Math.random()-.5);quizAnswers={};renderLesson();});
+    $("quiz-all").addEventListener("click",()=>{quizMode="all";questionSetOverride=null;quizAnswers={};renderLesson();});
+    $("quiz-exam").addEventListener("click",()=>{quizMode="exam";questionSetOverride=[...t.questions].sort(()=>Math.random()-.5).slice(0,5);quizAnswers={};renderLesson();});
+    $("shuffle-quiz").addEventListener("click",()=>{questionSetOverride=[...questionSet].sort(()=>Math.random()-.5);quizAnswers={};renderLesson();});
+    $("toggle-bookmark").addEventListener("click",()=>{if(bookmarks[key])delete bookmarks[key];else bookmarks[key]=true;persist(bookmarkKey,bookmarks);renderBookmarks();renderLesson();});
+    $("topic-notes").addEventListener("input",event=>{notes[key]=event.target.value;const ok=persist(notesKey,notes);$("notes-status").textContent=ok?"Saved on this device":"Could not save — device storage may be full.";});
+    
     let timerHandle=null, secondsLeft=600;
     $("start-timer").addEventListener("click",()=>{
       if(timerHandle) clearInterval(timerHandle);
@@ -272,13 +306,17 @@
     $("study-lesson").querySelectorAll("[data-flash]").forEach(card=>card.addEventListener("click",()=>card.classList.toggle("revealed")));
     $("check-answers").addEventListener("click",()=>{
       let score=0;
-      t.questions.forEach((q,i)=>{const ok=quizAnswers[i]===q.a;if(ok)score++;$("feedback-"+i).textContent=(ok?"Correct. ":"Not quite. ")+q.e;$("feedback-"+i).className="quiz-feedback "+(ok?"correct":"incorrect");});
-      $("quiz-score").textContent="Score: "+score+"/"+t.questions.length;
+      questionSet.forEach((q,i)=>{const ok=quizAnswers[i]===q.a;if(ok)score++;$("feedback-"+i).textContent=(ok?"Correct. ":"Not quite. ")+q.e;$("feedback-"+i).className="quiz-feedback "+(ok?"correct":"incorrect");});
+      $("quiz-score").textContent="Score: "+score+"/"+questionSet.length+" · "+Math.round(score/questionSet.length*100)+"%";
     });
-    $("mark-complete").addEventListener("click",()=>{progress[key]=!progress[key];saveProgress();renderTopics();renderLesson();});
+    $("mark-complete").addEventListener("click",()=>{
+      if(!progress[key]){progress[key]=true;const today=new Date().toLocaleDateString("en-CA");const studied=new Set(activity[today]||[]);studied.add(key);activity[today]=Array.from(studied);persist(activityKey,activity);}
+      else { progress[key]=false; }
+      saveProgress();renderDaily();renderTopics();renderLesson();
+    });
     $("print-lesson").addEventListener("click",()=>window.print());
   }
   $("study-search").addEventListener("input",renderTopics);
-  $("study-reset").addEventListener("click",()=>{if(confirm("Clear all study progress saved on this device?")){progress={};saveProgress();renderTopics();renderLesson();}});
-  renderSubjects();renderTopics();renderLesson();renderProgress();
+  $("study-reset").addEventListener("click",()=>{if(confirm("Clear all study progress saved on this device?")){progress={};activity={};persist(activityKey,activity);saveProgress();renderDaily();renderTopics();renderLesson();}});
+  renderSubjects();renderTopics();renderLesson();renderProgress();renderDaily();renderBookmarks();
 })();
