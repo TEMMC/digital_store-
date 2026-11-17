@@ -55,8 +55,14 @@ class MarketplaceSmokeTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"ZIMSEC A-LEVEL", response.data)
         self.assertIn(b"mt-study.js", response.data)
-        self.assertEqual(self.client.get("/static/mt-study.js").status_code, 200)
+        script = self.client.get("/static/mt-study.js")
+        self.assertEqual(script.status_code, 200)
+        for feature in (b"toggle-bookmark", b"topic-notes", b"quiz-exam",
+                        b"study-daily-label", b"study-flashcard"):
+            self.assertIn(feature, script.data)
         self.assertEqual(self.client.get("/static/mt-study.css").status_code, 200)
+        self.assertIn(b"study-bookmarks", response.data)
+        self.assertIn(b"study-daily-card", response.data)
 
     def test_registration_role_is_limited_and_login(self):
         self.register_and_login(role="admin", username="publicuser")
