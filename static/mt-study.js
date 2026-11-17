@@ -214,18 +214,20 @@
   const bookmarkKey = "mt-study-bookmarks-v1";
   const notesKey = "mt-study-notes-v1";
   const activityKey = "mt-study-activity-v1";
+  const mistakesKey = "mt-study-mistakes-v1";
   let activeSubject = courses[0].id;
   let activeTopic = null;
   let quizAnswers = {};
   let quizMode = "all";
   let questionSetOverride = null;
   let studyTimerHandle = null;
-  let progress = {}, bookmarks = {}, notes = {}, activity = {};
+  let progress = {}, bookmarks = {}, notes = {}, activity = {}, mistakes = {};
   const readStore = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || "null") || fallback; } catch (_) { return fallback; } };
   progress = readStore(progressKey, {});
   bookmarks = readStore(bookmarkKey, {});
   notes = readStore(notesKey, {});
   activity = readStore(activityKey, {});
+  mistakes = readStore(mistakesKey, {});
   const subject = () => courses.find(s => s.id === activeSubject);
   const topic = () => subject().topics.find(t => t.id === activeTopic);
   const esc = value => String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -255,6 +257,15 @@
       const parts = btn.dataset.openBookmark.split(":");
       activeSubject = parts[0]; activeTopic = parts[1]; quizMode = "all"; questionSetOverride = null; quizAnswers = {};
       renderSubjects(); renderTopics(); renderLesson();
+    }));
+  }
+  function renderMistakes(){
+    const weak = courses.flatMap(s => s.topics.filter(t => mistakes[s.id+":"+t.id] > 0).map(t => ({s,t,count:mistakes[s.id+":"+t.id]}))).sort((a,b) => b.count-a.count).slice(0,6);
+    $("study-mistakes").innerHTML = '<strong>Topics to revise · '+weak.length+'</strong>' +
+      (weak.length ? weak.map(x => '<button type="button" class="study-mistake-link" data-open-weak="'+x.s.id+':'+x.t.id+'">'+x.s.icon+' '+esc(x.t.title)+' <small>'+x.count+' to review</small></button>').join("") : '<p class="study-bookmark-empty">No weak topics yet. Complete a quiz to build your revision list.</p>');
+    $("study-mistakes").querySelectorAll("[data-open-weak]").forEach(btn => btn.addEventListener("click", () => {
+      const parts=btn.dataset.openWeak.split(":"); activeSubject=parts[0]; activeTopic=parts[1];
+      quizMode="all"; questionSetOverride=null; quizAnswers={}; renderSubjects(); renderTopics(); renderLesson();
     }));
   }
   function renderSubjects(){
@@ -311,8 +322,10 @@
     });
     $("study-lesson").querySelectorAll("[data-flash]").forEach(card=>card.addEventListener("click",()=>card.classList.toggle("revealed")));
     $("check-answers").addEventListener("click",()=>{
-      let score=0;
-      questionSet.forEach((q,i)=>{const ok=quizAnswers[i]===q.a;if(ok)score++;$("feedback-"+i).textContent=(ok?"Correct. ":"Not quite. ")+q.e;$("feedback-"+i).className="quiz-feedback "+(ok?"correct":"incorrect");});
+      let score=0, wrong=0;
+      questionSet.forEach((q,i)=>{const ok=quizAnswers[i]===q.a;if(ok)score++;else wrong++;$("feedback-"+i).textContent=(ok?"Correct. ":"Not quite. ")+q.e;$("feedback-"+i).className="quiz-feedback "+(ok?"correct":"incorrect");});
+      if(wrong) mistakes[key]=wrong; else delete mistakes[key];
+      persist(mistakesKey,mistakes); renderMistakes();
       $("quiz-score").textContent="Score: "+score+"/"+questionSet.length+" · "+Math.round(score/questionSet.length*100)+"%";
     });
     $("mark-complete").addEventListener("click",()=>{
@@ -324,5 +337,5 @@
   }
   $("study-search").addEventListener("input",renderTopics);
   $("study-reset").addEventListener("click",()=>{if(confirm("Clear all study progress saved on this device?")){progress={};activity={};persist(activityKey,activity);saveProgress();renderDaily();renderTopics();renderLesson();}});
-  renderSubjects();renderTopics();renderLesson();renderProgress();renderDaily();renderBookmarks();
+  renderSubjects();renderTopics();renderLesson();renderProgress();renderDaily();renderBookmarks();renderMistakes();
 })();
