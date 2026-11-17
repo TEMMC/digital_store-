@@ -219,6 +219,7 @@
   let quizAnswers = {};
   let quizMode = "all";
   let questionSetOverride = null;
+  let studyTimerHandle = null;
   let progress = {}, bookmarks = {}, notes = {}, activity = {};
   const readStore = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || "null") || fallback; } catch (_) { return fallback; } };
   progress = readStore(progressKey, {});
@@ -236,8 +237,12 @@
     $("study-progress-fill").style.width = (100 * done / all.length) + "%";
     $("study-progress-label").textContent = done + " of " + all.length + " topics completed";
   }
+  function localDateKey(){
+    const d = new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
   function renderDaily(){
-    const today = new Date().toLocaleDateString("en-CA");
+    const today = localDateKey();
     const count = (activity[today] || []).length;
     $("study-daily-label").textContent = count + " / 3 topics studied today";
     $("study-daily-fill").style.width = Math.min(100, count / 3 * 100) + "%";
@@ -255,7 +260,7 @@
   function renderSubjects(){
     $("study-subjects").innerHTML = courses.map(s => '<button type="button" class="study-subject '+(s.id===activeSubject?'active':'')+'" data-subject="'+s.id+'"><span>'+s.icon+'</span><b>'+s.name+'</b><small>'+s.topics.length+' topics</small></button>').join("");
     $("study-subjects").querySelectorAll("[data-subject]").forEach(btn => btn.addEventListener("click", () => {
-      activeSubject=btn.dataset.subject; activeTopic=null; renderSubjects(); renderTopics(); renderLesson();
+      activeSubject=btn.dataset.subject; activeTopic=null; quizMode="all"; questionSetOverride=null; quizAnswers={}; renderSubjects(); renderTopics(); renderLesson();
     }));
   }
   function renderTopics(){
@@ -266,6 +271,7 @@
     $("study-topic-list").querySelectorAll("[data-topic]").forEach(btn=>btn.addEventListener("click",()=>{activeTopic=btn.dataset.topic;quizAnswers={};quizMode="all";questionSetOverride=null;renderTopics();renderLesson();}));
   }
   function renderLesson(){
+    if(studyTimerHandle){clearInterval(studyTimerHandle);studyTimerHandle=null;}
     const t=topic();
     if(!t){$("study-lesson").innerHTML='<div class="study-empty"><div class="study-symbol">✦</div><h2>Choose a topic</h2><p>Pick a topic above to open the lesson.</p></div>';return;}
     const key=activeSubject+":"+t.id;
@@ -293,14 +299,14 @@
     $("toggle-bookmark").addEventListener("click",()=>{if(bookmarks[key])delete bookmarks[key];else bookmarks[key]=true;persist(bookmarkKey,bookmarks);renderBookmarks();renderLesson();});
     $("topic-notes").addEventListener("input",event=>{notes[key]=event.target.value;const ok=persist(notesKey,notes);$("notes-status").textContent=ok?"Saved on this device":"Could not save — device storage may be full.";});
     
-    let timerHandle=null, secondsLeft=600;
+    let secondsLeft=600;
     $("start-timer").addEventListener("click",()=>{
-      if(timerHandle) clearInterval(timerHandle);
+      if(studyTimerHandle) clearInterval(studyTimerHandle);
       secondsLeft=600; $("study-timer").textContent="10:00 remaining";
-      timerHandle=setInterval(()=>{
+      studyTimerHandle=setInterval(()=>{
         secondsLeft--;
         $("study-timer").textContent=Math.floor(secondsLeft/60)+":"+String(secondsLeft%60).padStart(2,"0")+" remaining";
-        if(secondsLeft<=0){clearInterval(timerHandle);timerHandle=null;$("study-timer").textContent="Time is up — check your answers.";}
+        if(secondsLeft<=0){clearInterval(studyTimerHandle);studyTimerHandle=null;$("study-timer").textContent="Time is up — check your answers.";}
       },1000);
     });
     $("study-lesson").querySelectorAll("[data-flash]").forEach(card=>card.addEventListener("click",()=>card.classList.toggle("revealed")));
@@ -310,7 +316,7 @@
       $("quiz-score").textContent="Score: "+score+"/"+questionSet.length+" · "+Math.round(score/questionSet.length*100)+"%";
     });
     $("mark-complete").addEventListener("click",()=>{
-      if(!progress[key]){progress[key]=true;const today=new Date().toLocaleDateString("en-CA");const studied=new Set(activity[today]||[]);studied.add(key);activity[today]=Array.from(studied);persist(activityKey,activity);}
+      if(!progress[key]){progress[key]=true;const today=localDateKey();const studied=new Set(activity[today]||[]);studied.add(key);activity[today]=Array.from(studied);persist(activityKey,activity);}
       else { progress[key]=false; }
       saveProgress();renderDaily();renderTopics();renderLesson();
     });
