@@ -58,7 +58,8 @@ class MarketplaceSmokeTests(unittest.TestCase):
         script = self.client.get("/static/mt-study.js")
         self.assertEqual(script.status_code, 200)
         for feature in (b"toggle-bookmark", b"topic-notes", b"quiz-exam",
-                        b"study-daily-label", b"study-flashcard"):
+                        b"study-daily-label", b"study-flashcard", b"renderMistakes",
+                        b"study-mistakes"):
             self.assertIn(feature, script.data)
         self.assertEqual(self.client.get("/static/mt-study.css").status_code, 200)
         self.assertIn(b"study-bookmarks", response.data)
